@@ -1,0 +1,19 @@
+{
+  "name": "Agenda Allan — Beleza Capilar",
+  "short_name": "Agenda Allan",
+  "description": "Gestão de agenda, clientes e vendas do salão",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c0c0e",
+  "theme_color": "#0c0c0e",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

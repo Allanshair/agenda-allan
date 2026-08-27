@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0c0c0e">
+<title>Agenda Allan</title>
+<style>
+:root{
+  --bg:#0c0c0e;--card:#17171b;--card2:#202026;--line:#2a2a31;
+  --gold:#d4af37;--gold2:#b8912e;--text:#f5f2ea;--muted:#9a9688;
+  --green:#3ddc84;--red:#ff5a5f;--blue:#5aa7ff;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{position:sticky;top:0;z-index:50;background:rgba(12,12,14,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.brand h1{font-size:17px;font-weight:800;letter-spacing:.5px;color:var(--gold)}
+.brand span{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+main{max-width:560px;margin:0 auto;padding:16px 16px 100px}
+.screen{display:none}
+.screen.active{display:block}
+h2{font-size:20px;margin-bottom:4px}
+h3{font-size:15px;margin-bottom:10px;color:var(--gold)}
+.sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.row.top{align-items:flex-start}
+.gold{color:var(--gold)}
+.muted{color:var(--muted);font-size:12px}
+.money{font-weight:700;color:var(--gold)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--gold);color:#141414;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer}
+.btn.ghost{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.btn.small{padding:8px 12px;font-size:13px;width:auto;border-radius:10px}
+.btn.danger{background:transparent;color:var(--red);border:1px solid var(--red)}
+.btn.mini{padding:6px 10px;font-size:12px;width:auto;border-radius:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.shortcut{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer}
+.shortcut .ic{font-size:24px;display:block;margin-bottom:6px}
+.shortcut .lb{font-size:11px;font-weight:600}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
+.badge.confirmado{background:#3a2f08;color:var(--gold)}
+.badge.realizado{background:#0d3322;color:var(--green)}
+.badge.cancelado{background:#3a1214;color:var(--red)}
+.badge.alert{background:#3a1214;color:var(--red)}
+.badge.ok{background:#0d3322;color:var(--green)}
+.statusbar{display:flex;gap:8px;margin-top:12px}
+.statusbar .st{flex:1;text-align:center;padding:9px 4px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;background:var(--card2);border:1px solid var(--line);color:var(--muted)}
+.statusbar .st.on-confirmado{background:#3a2f08;color:var(--gold);border-color:var(--gold)}
+.statusbar .st.on-realizado{background:#0d3322;color:var(--green);border-color:var(--green)}
+.statusbar .st.on-cancelado{background:#3a1214;color:var(--red);border-color:var(--red)}
+.tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:14px}
+.tabs button{flex:1;background:none;border:none;color:var(--muted);font-size:13px;font-weight:700;padding:9px;border-radius:9px;cursor:pointer}
+.tabs button.on{background:var(--gold);color:#141414}
+.calnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.calnav .lbl{font-weight:700;font-size:15px}
+.calnav button{background:var(--card2);border:1px solid var(--line);color:var(--gold);width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer}
+.monthgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.monthgrid .dw{text-align:center;font-size:11px;color:var(--muted);padding:4px 0;font-weight:700}
+.monthgrid .d{aspect-ratio:1;background:var(--card);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;cursor:pointer;position:relative}
+.monthgrid .d.today{border-color:var(--gold);color:var(--gold);font-weight:800}
+.monthgrid .d.has{background:var(--card2)}
+.monthgrid .d.has::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--gold);position:absolute;bottom:5px}
+.monthgrid .d.other{opacity:.25}
+.dayitem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.dayitem:last-child{border-bottom:none}
+.dayitem .time{font-weight:800;color:var(--gold);font-size:14px;min-width:52px}
+.dayitem .info{flex:1;min-width:0}
+.dayitem .info b{font-size:14px;display:block}
+.dayitem .info span{font-size:12px;color:var(--muted)}
+.weekhead{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:14px}
+.weekhead .d{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 2px;text-align:center;cursor:pointer}
+.weekhead .d.today{border-color:var(--gold)}
+.weekhead .d.sel{background:var(--gold);color:#141414}
+.weekhead .d b{display:block;font-size:11px}
+.weekhead .d span{font-size:10px;color:var(--muted)}
+.statcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.statcard .v{font-size:22px;font-weight:800}
+.statcard .l{font-size:11px;color:var(--muted);margin-top:2px}
+input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:13px;font-size:15px;margin-bottom:10px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+label{display:block;font-size:12px;color:var(--muted);margin:2px 0 5px;font-weight:600}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:var(--bg);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;padding:20px 18px 24px}
+.modal h3{font-size:18px;margin-bottom:14px}
+.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer}
+.search{position:relative}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(12,12,14,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
+.nav button{background:none;border:none;color:var(--muted);font-size:10px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 10px;cursor:pointer;border-radius:12px}
+.nav button .ic{font-size:20px}
+.nav button.on{color:var(--gold)}
+.nav button.on .ic{transform:translateY(-1px)}
+.fab{position:fixed;right:18px;bottom:84px;z-index:60;width:56px;height:56px;border-radius:50%;background:var(--gold);color:#141414;font-size:28px;font-weight:800;border:none;box-shadow:0 6px 18px rgba(212,175,55,.35);cursor:pointer}
+.empty{text-align:center;color:var(--muted);padding:28px 10px;font-size:14px}
+.alert-line{font-size:12px;color:var(--red);font-weight:600}
+.bar-wrap{margin-top:6px;background:var(--card2);border-radius:8px;height:10px;overflow:hidden}
+.bar{height:100%;background:var(--gold);border-radius:8px;min-width:2px}
+.msg{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;z-index:200;background:var(--card2);border:1px solid var(--gold);color:var(--text);padding:11px 18px;border-radius:12px;font-size:13px;font-weight:600;display:none;max-width:90%;text-align:center}
+.menu-links{display:grid;gap:10px}
+.menu-link{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;color:var(--text);font-size:14px;font-weight:600}
+.menu-link .ic{font-size:20px}
+.svc-line{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;flex-wrap:wrap}
+.svc-line select{flex:1;margin:0;padding:10px;min-width:140px}
+.svc-line .svc-price{width:90px;margin:0;padding:10px;text-align:center}
+.svc-line .svc-dur{font-size:11px;color:var(--muted);min-width:50px;text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><h1>AGENDA ALLAN</h1><span>Beleza Capilar · Gestão</span></div>
+  <button class="icon-btn" onclick="openMenu()">⚙️</button>
+</header>
+
+<main>
+  <section id="screen-inicio" class="screen active"></section>
+  <section id="screen-agenda" class="screen"></section>
+  <section id="screen-clientes" class="screen"></section>
+  <section id="screen-vendas" class="screen"></section>
+  <section id="screen-resultados" class="screen"></section>
+</main>
+
+<nav class="nav" id="bottomnav">
+  <button class="on" data-view="inicio"><span class="ic">🏠</span>Início</button>
+  <button data-view="agenda"><span class="ic">📅</span>Agenda</button>
+  <button data-view="clientes"><span class="ic">👥</span>Clientes</button>
+  <button data-view="vendas"><span class="ic">💸</span>Vendas</button>
+  <button data-view="resultados"><span class="ic">📊</span>Resultados</button>
+</nav>
+
+<button class="fab" id="fab" onclick="fabAction()">+</button>
+
+<div class="overlay" id="ovl-menu" onclick="if(event.target===this)closeOverlay('ovl-menu')">
+  <div class="modal">
+    <h3>Menu <button class="modal-close" onclick="closeOverlay('ovl-menu')">✕</button></h3>
+    <div class="menu-links">
+      <div class="menu-link" onclick="go('servicos');closeOverlay('ovl-menu')"><span class="ic">💇</span>Serviços</div>
+      <div class="menu-link" onclick="go('produtos');closeOverlay('ovl-menu')"><span class="ic">🧴</span>Produtos</div>
+      <div class="menu-link" onclick="go('relatorios');closeOverlay('ovl-menu')"><span class="ic">🗓️</span>Relatórios</div>
+      <div class="menu-link" onclick="go('config');closeOverlay('ovl-menu')"><span class="ic">🔧</span>Configurações</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovl-generic" onclick="if(event.target===this)closeOverlay('ovl-generic')">
+  <div class="modal" id="generic-content"></div>
+</div>
+
+<div class="msg" id="toast"></div>
+
+<script>
+/* ============ BANCO DE DADOS (localStorage) ============ */
+const PAY = ['Pix','Dinheiro','Débito','Crédito','Outro'];
+let db = load();
+function load(){
+  try{ const d = JSON.parse(localStorage.getItem('agendaAllan')); if(d && d.clients) return d; }catch(e){}
+  return seed();
+}
+function seed(){
+  return {
+    clients: [],
+    services: [
+      {id:1,name:'Corte de Cabelo',price:60,duration:40,active:true},
+      {id:2,name:'Escova',price:50,duration:50,active:true},
+      {id:3,name:'Coloração',price:120,duration:120,active:true},
+      {id:4,name:'Hidratação',price:80,duration:60,active:true},
+      {id:5,name:'Progressiva',price:250,duration:150,active:true}
+    ],
+    products: [
+      {id:1,name:'Máscara Hidratante — Fórmula Exclusiva',price:90,active:true}
+    ],
+    appointments: [],
+    sales: [],
+    settings: { noReturnDays: 30 }
+  };
+}
+function save(){ localStorage.setItem('agendaAllan', JSON.stringify(db)); }
+function nextId(arr){ return arr.length ? Math.max(...arr.map(i=>i.id)) + 1 : 1; }
+
+/* ============ HELPERS ============ */
+const fmtM = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+function todayISO(){ const d = new Date(); return iso(d); }
+function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function parseISO(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); }
+function fmtBR(isoDate){ const d = parseISO(isoDate); return d.toLocaleDateString('pt-BR'); }
+function fmtBRfull(isoDate){ const d = parseISO(isoDate); return d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}); }
+function addDays(isoDate, n){ const d = parseISO(isoDate); d.setDate(d.getDate()+n); return iso(d); }
+function weekStart(isoDate){ const d = parseISO(isoDate); const wd = (d.getDay()+6)%7; d.setDate(d.getDate()-wd); return iso(d); }
+function monthKey(isoDate){ return isoDate.slice(0,7); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function serviceById(id){ return db.services.find(s=>s.id===id); }
+function productById(id){ return db.products.find(p=>p.id===id); }
+function clientById(id){ return db.clients.find(c=>c.id===id); }
+function greeting(){ const h = new Date().getHours(); return h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'; }
+
+/* ============ NAVEGAÇÃO ============ */
+let state = { view:'inicio', agendaTab:'dia', agendaCursor:todayISO(), selectedDay:todayISO(), clientFilter:'', saleClientId:'', resMonth:monthKey(todayISO()), saleApptId:null, editingApptId:null };
+
+function go(view){
+  const g = document.getElementById('screen-generic');
+  if(g) g.remove();
+  state.view = view;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const target = document.getElementById('screen-'+view);
+  if(target){ target.classList.add('active'); }
+  else {
+    const s = document.createElement('section');
+    s.className = 'screen active'; s.id = 'screen-generic'; s.innerHTML = '';
+    document.getElementById('screen-inicio').after(s);
+  }
+  document.querySelectorAll('#bottomnav button').forEach(b=>b.classList.toggle('on', b.dataset.view===view));
+  render(view);
+}
+function render(view){
+  if(view==='inicio') renderInicio();
+  if(view==='agenda') renderAgenda();
+  if(view==='clientes') renderClientes();
+  if(view==='vendas') renderVendas();
+  if(view==='resultados') renderResultados();
+  if(view==='servicos') renderServicos();
+  if(view==='produtos') renderProdutos();
+  if(view==='relatorios') renderRelatorios();
+  if(view==='config') renderConfig();
+}
+function openMenu(){ document.getElementById('ovl-menu').classList.add('show'); }
+function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
+function openModal(html){ document.getElementById('generic-content').innerHTML = html; document.getElementById('ovl-generic').classList.add('show'); }
+function closeModal(){ closeOverlay('ovl-generic'); }
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(()=>t.style.display='none', 2600);
+}
+function fabAction(){
+  if(state.view==='inicio') openApptModal();
+  else if(state.view==='agenda') openApptModal();
+  else if(state.view==='clientes') openClientModal();
+  else if(state.view==='vendas') openSaleModal();
+  else if(state.view==='resultados') openSaleModal();
+  else if(state.view==='servicos') openServiceModal();
+  else if(state.view==='produtos') openProductModal();
+}
+
+/* ============ TELA INÍCIO ============ */
+function renderInicio(){
+  const t = todayISO();
+  const dayApps = db.appointments.filter(a=>a.date===t).sort((a,b)=>a.time.localeCompare(b.time));
+  const next = db.appointments.filter(a=>a.date>=t && a.status==='confirmado').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0] || null;
+  const clientsToday = new Set(dayApps.filter(a=>a.status!=='cancelado').map(a=>a.clientId)).size;
+  const expected = dayApps.filter(a=>a.status!=='cancelado').reduce((s,a)=>s+a.price,0);
+  let html = `<h2>${greeting()}, Allan! 👋</h2><div class="sub">${fmtBRfull(t)}</div>`;
+  html += `<div class="card"><div class="row"><div><div class="muted">Próximo atendimento</div>`;
+  html += next ? `<b>${fmtBR(next.date)} às ${next.time}</b><div class="muted">${esc(clientById(next.clientId)?.name||'—')} · ${appServicesLabel(next)}</div>` : `<div class="muted">Nenhum agendamento futuro confirmado</div>`;
+  html += `</div></div></div>`;
+  html += `<div class="grid4" style="margin-bottom:14px">`;
+  html += `<div class="statcard"><div class="v">${dayApps.filter(a=>a.status!=='cancelado').length}</div><div class="l">Atendimentos hoje</div></div>`;
+  html += `<div class="statcard"><div class="v">${clientsToday}</div><div class="l">Clientes hoje</div></div>`;
+  html += `<div class="statcard"><div class="v money">${fmtM(expected)}</div><div class="l">Previsto hoje</div></div>`;
+  html += `<div class="statcard"><div class="v">${dayApps.filter(a=>a.status==='realizado').length}</div><div class="l">Realizados</div></div>`;
+  html += `</div>`;
+  html += `<div class="grid2" style="margin-bottom:14px">`;
+  html += `<div class="shortcut" onclick="openApptModal()"><span class="ic">📅</span><span class="lb">Novo agendamento</span></div>`;
+  html += `<div class="shortcut" onclick="openClientModal()"><span class="ic">👤</span><span class="lb">Nova cliente</span></div>`;
+  html += `<div class="shortcut" onclick="openSaleModal()"><span class="ic">💸</span><span class="lb">Registrar venda</span></div>`;
+  html += `<div class="shortcut" onclick="go('agenda')"><span class="ic">🗓️</span><span class="lb">Ver agenda</span></div>`;
+  html += `</div>`;
+  html += `<h3>Agenda do dia</h3>`;
+  if(!dayApps.length) html += `<div class="empty">Nenhum atendimento hoje. Aproveite! ✨</div>`;
+  dayApps.forEach(a=>{ html += apptItem(a); });
+  document.getElementById('screen-inicio').innerHTML = html;
+}
+function appServicesLabel(a){
+  if(!a.services || !a.services.length) return esc(serviceById(a.serviceId)?.name||'—');
+  return a.services.map(s=>esc(serviceById(s.serviceId)?.name||'—')).join(' + ');
+}
+function apptItem(a){
+  const cl = clientById(a.clientId);
+  const disc = a.discount>0 ? ` <span class="muted" style="text-decoration:line-through">${fmtM(a.price + a.discount)}</span> <span class="gold">−${fmtM(a.discount)}</span>` : '';
+  return `<div class="card" style="cursor:pointer" onclick="openApptModal(${a.id})">
+    <div class="row"><div class="time" style="font-weight:800;color:var(--gold)">${esc(a.time)}</div>
+    <span class="badge ${a.status}">${a.status==='confirmado'?'Confirmado':a.status==='realizado'?'Realizado':'Cancelado'}</span></div>
+    <b>${esc(cl?.name||'Cliente removido')}</b>
+    <div class="muted">${appServicesLabel(a)} · ${a.duration} min · <span class="money">${fmtM(a.price)}</span>${disc}</div>
+  </div>`;
+}
+
+/* ============ TELA AGENDA ============ */
+function renderAgenda(){
+  let html = `<h2>Agenda</h2>`;
+  html += `<div class="tabs">
+    <button class="${state.agendaTab==='dia'?'on':''}" onclick="state.agendaTab='dia';renderAgenda()">Dia</button>
+    <button class="${state.agendaTab==='semana'?'on':''}" onclick="state.agendaTab='semana';renderAgenda()">Semana</button>
+    <button class="${state.agendaTab==='mes'?'on':''}" onclick="state.agendaTab='mes';renderAgenda()">Mês</button>
+  </div>`;
+  if(state.agendaTab==='dia') html += renderAgendaDia();
+  else if(state.agendaTab==='semana') html += renderAgendaSemana();
+  else html += renderAgendaMes();
+  document.getElementById('screen-agenda').innerHTML = html;
+}
+function navDay(n){
+  if(state.agendaTab==='dia') state.agendaCursor = addDays(state.agendaCursor, n);
+  else if(state.agendaTab==='semana') state.agendaCursor = addDays(state.agendaCursor, n*7);
+  else { const d = parseISO(state.agendaCursor); d.setMonth(d.getMonth()+n); state.agendaCursor = iso(d); }
+  renderAgenda();
+}
+function renderAgendaDia(){
+  const d = state.agendaCursor;
+  const apps = db.appointments.filter(a=>a.date===d).sort((a,b)=>a.time.localeCompare(b.time));
+  let html = `<div class="calnav"><button onclick="navDay(-1)">‹</button><div class="lbl">${fmtBRfull(d)}</div><button onclick="navDay(1)">›</button></div>`;
+  html += `<button class="btn" onclick="openApptModal(null,'${d}')">+ Novo agendamento</button><div style="height:12px"></div>`;
+  if(!apps.length) html += `<div class="empty">Nenhum agendamento neste dia.</div>`;
+  apps.forEach(a=> html += apptItem(a));
+  return html;
+}
+function renderAgendaSemana(){
+  const ws = weekStart(state.agendaCursor);
+  let html = `<div class="calnav"><button onclick="navDay(-1)">‹</button><div class="lbl">Semana de ${fmtBR(ws)}</div><button onclick="navDay(1)">›</button></div>`;
+  html += `<div class="weekhead">`;
+  for(let i=0;i<7;i++){
+    const dd = addDays(ws,i);
+    const sel = dd===state.selectedDay;
+    html += `<div class="d ${dd===todayISO()?'today':''} ${sel?'sel':''}" onclick="state.selectedDay=dd;state.agendaCursor=dd;renderAgenda()"><b>${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][parseISO(dd).getDay()]}</b><span>${parseISO(dd).getDate()}</span></div>`;
+  }
+  html += `</div>`;
+  for(let i=0;i<7;i++){
+    const dd = addDays(ws,i);
+    const apps = db.appointments.filter(a=>a.date===dd).sort((a,b)=>a.time.localeCompare(b.time));
+    html += `<div class="card" style="padding:10px 14px"><b style="font-size:13px">${fmtBR(dd)}</b>`;
+    if(!apps.length) html += `<div class="muted" style="padding:6px 0">Sem agendamentos</div>`;
+    apps.forEach(a=>{
+      const cl = clientById(a.clientId);
+      const disc = a.discount>0 ? ` <span class="muted" style="text-decoration:line-through">${fmtM(a.price+a.discount)}</span>` : '';
+      html += `<div style="padding:7px 0;border-bottom:1px solid var(--line);cursor:pointer" onclick="openApptModal(${a.id})">
+        <div class="row"><b style="color:var(--gold);font-size:13px">${esc(a.time)}</b><span class="badge ${a.status}">${a.status==='confirmado'?'Conf.':a.status==='realizado'?'Real.':'Canc.'}</span></div>
+        <div style="font-size:13px">${esc(cl?.name||'—')} · ${appServicesLabel(a)} · <span class="money">${fmtM(a.price)}</span>${disc}</div></div>`;
+    });
+    html += `</div>`;
+  }
+  return html;
+}
+function renderAgendaMes(){
+  const d = parseISO(state.agendaCursor);
+  const y = d.getFullYear(), m = d.getMonth();
+  const first = new Date(y,m,1), last = new Date(y,m+1,0);
+  const apps = db.appointments.filter(a=>a.date.slice(0,7)===state.agendaCursor && a.status!=='cancelado');
+  const byDay = {};
+  apps.forEach(a=>{ byDay[a.date] = (byDay[a.date]||0)+1; });
+  let html = `<div class="calnav"><button onclick="navDay(-1)">‹</button><div class="lbl">${d.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</div><button onclick="navDay(1)">›</button></div>`;
+  html += `<div class="monthgrid">`;
+  ['D','S','T','Q','Q','S','S'].forEach(x=> html += `<div class="dw">${x}</div>`);
+  const startPad = first.getDay();
+  const total = last.getDate();
+  for(let i=0;i<startPad;i++) html += `<div class="d other"></div>`;
+  for(let day=1;day<=total;day++){
+    const dd = iso(new Date(y,m,day));
+    const cls = dd===todayISO() ? 'today' : '';
+    const has = byDay[dd] ? ' has' : '';
+    html += `<div class="d ${cls}${has}" onclick="state.selectedDay=dd;state.agendaCursor=dd;state.agendaTab='dia';renderAgenda()"><span>${day}</span>${byDay[dd]?`<small style="font-size:9px;color:var(--gold)">${byDay[dd]}</small>`:''}</div>`;
+  }
+  html += `</div>`;
+  html += `<div style="height:12px"></div><button class="btn" onclick="openApptModal(null,'${state.agendaCursor}')">+ Novo agendamento</button>`;
+  return html;
+}
+
+/* ============ AGENDAMENTO (criar/editar) — MÚLTIPLOS SERVIÇOS + DESCONTO ============ */
+function openApptModal(id, presetDate){
+  const a = id ? db.appointments.find(x=>x.id===id) : null;
+  state.editingApptId = a ? a.id : null;
+  const date = a ? a.date : (presetDate||todayISO());
+  const time = a ? a.time : '09:00';
+  const price = a ? a.price : 0;
+  const dur = a ? a.duration : 0;
+  const discount = a && a.discount ? a.discount : 0;
+  const services = a && a.services && a.services.length ? a.services.map(s=>({serviceId:s.serviceId, price:s.price, duration:s.duration})) : [ {serviceId: db.services[0]?db.services[0].id:null, price: db.services[0]?db.services[0].price:0, duration: db.services[0]?db.services[0].duration:0} ];
+  let html = `<h3>${a?'Editar':'Novo'} agendamento <button class="modal-close" onclick="closeModal()">✕</button></h3>`;
+  html += `<label>Cliente</label><select id="ap-client">${db.clients.map(c=>`<option value="${c.id}" ${a&&a.clientId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select>`;
+  html += `<button class="btn small ghost" onclick="quickClient()">+ Cadastrar nova cliente</button>`;
+  html += `<label>Serviços (preço editável)</label><div id="ap-services"></div>`;
+  html += `<button class="btn small ghost" onclick="addServiceLine()">+ Adicionar serviço</button>`;
+  html += `<div class="grid2"><div><label>Data</label><input type="date" id="ap-date" value="${date}"></div><div><label>Horário</label><input type="time" id="ap-time" value="${time}"></div></div>`;
+  html += `<div class="grid2">
+    <div><label>Desconto (R$)</label><input type="number" id="ap-disc" value="${discount}" step="0.01" min="0" oninput="recalcTotals()"></div>
+    <div><label>Duração total (min)</label><input type="number" id="ap-dur" value="${dur}" min="5"></div>
+  </div>`;
+  html += `<div class="row" style="background:var(--card2);border-radius:12px;padding:12px;margin-bottom:10px"><b>Total:</b><span class="money" id="ap-total" style="font-size:20px">${fmtM(price)}</span></div>`;
+  html += `<label>Forma de pagamento</label><select id="ap-pay">${PAY.map(p=>`<option ${p===(a?.pay||'Pix')?'selected':''}>${p}</option>`).join('')}</select>`;
+  html += `<label>Observação</label><textarea id="ap-note" rows="2" placeholder="Anotações do atendimento...">${esc(a?.note||'')}</textarea>`;
+  if(a){
+    html += `<div class="statusbar">
+      <div class="st ${a.status==='confirmado'?'on-confirmado':''}" onclick="setStatus('confirmado')">Confirmado</div>
+      <div class="st ${a.status==='realizado'?'on-realizado':''}" onclick="setStatus('realizado')">Realizado</div>
+      <div class="st ${a.status==='cancelado'?'on-cancelado':''}" onclick="setStatus('cancelado')">Cancelado</div>
+    </div>`;
+    html += `<div style="height:10px"></div><button class="btn ghost" onclick="openSaleFromAppt(${a.id})">💸 Registrar venda neste atendimento</button><div style="height:8px"></div>`;
+  }
+  html += `<button class="btn" onclick="saveAppt()">💾 Salvar</button>`;
+  if(a) html += `<div style="height:8px"></div><button class="btn danger" onclick="delAppt(${a.id})">🗑️ Excluir</button>`;
+  openModal(html);
+  services.forEach(s=> addServiceLine(s.serviceId, s.price, s.duration));
+  recalcTotals();
+}
+function addServiceLine(serviceId, price, duration){
+  const wrap = document.getElementById('ap-services');
+  if(!wrap) return;
+  const active = db.services.filter(s=>s.active);
+  const sv = serviceId ? serviceById(serviceId) : active[0];
+  const p = price!=null ? price : (sv?sv.price:0);
+  const d = duration!=null ? duration : (sv?sv.duration:60);
+  const div = document.createElement('div');
+  div.className = 'svc-line';
+  div.innerHTML = `<select class="svc-sel">${active.map(s=>`<option value="${s.id}" data-p="${s.price}" data-d="${s.duration}" ${sv&&s.id===sv.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select>
+  <input type="number" class="svc-price" value="${p}" step="0.01" min="0">
+  <span class="svc-dur">${d}min</span>
+  <button class="btn mini danger" onclick="this.parentElement.remove();recalcTotals()">✕</button>`;
+  div.querySelector('.svc-sel').onchange = function(){
+    const o = this.options[this.selectedIndex];
+    div.querySelector('.svc-price').value = o.dataset.p;
+    div.querySelector('.svc-dur').textContent = o.dataset.d+'min';
+    recalcTotals();
+  };
+  div.querySelector('.svc-price').oninput = recalcTotals;
+  wrap.appendChild(div);
+  recalcTotals();
+}
+function recalcTotals(){
+  const lines = document.querySelectorAll('.svc-line');
+  let total = 0, dur = 0;
+  lines.forEach(d=>{
+    const o = d.querySelector('.svc-sel').options[d.querySelector('.svc-sel').selectedIndex];
+    const p = +d.querySelector('.svc-price').value || 0;
+    total += p; dur += +o.dataset.d;
+  });
+  const disc = +document.getElementById('ap-disc').value || 0;
+  if(disc > total) document.getElementById('ap-disc').value = total;
+  total = Math.max(0, total - disc);
+  const el = document.getElementById('ap-total'); if(el) el.textContent = fmtM(total);
+  const du = document.getElementById('ap-dur'); if(du) du.value = dur;
+}
+function quickClient(){
+  document.getElementById('ovl-generic').innerHTML = `<div class="modal"><h3>Nova cliente <button class="modal-close" onclick="closeModal()">✕</button></h3>
+    <label>Nome *</label><input id="qc-name" placeholder="Nome completo">
+    <label>WhatsApp</label><input id="qc-whats" placeholder="(00) 00000-0000">
+    <label>Observações</label><textarea id="qc-note" rows="2"></textarea>
+    <button class="btn" onclick="saveQuickClient()">Salvar cliente</button></div>`;
+}
+function saveQuickClient(){
+  const name = document.getElementById('qc-name').value.trim();
+  if(!name){ toast('Informe o nome da cliente'); return; }
+  const c = { id:nextId(db.clients), name, whatsapp:document.getElementById('qc-whats').value.trim(), notes:document.getElementById('qc-note').value.trim(), createdAt:todayISO() };
+  db.clients.push(c); save();
+  const sel = document.getElementById('ap-client');
+  if(sel){ const o = document.createElement('option'); o.value=c.id; o.textContent=c.name; o.selected=true; sel.appendChild(o); }
+  toast('Cliente cadastrada!'); closeModal();
+}
+function setStatus(st){
+  const a = db.appointments.find(x=>x.id===state.editingApptId);
+  if(a){ a.status = st; save(); openApptModal(a.id); }
+}
+function saveAppt(){
+  const clientId = +document.getElementById('ap-client').value;
+  const date = document.getElementById('ap-date').value;
+  const time = document.getElementById('ap-time').value;
+  const dur = +document.getElementById('ap-dur').value;
+  const discount = +document.getElementById('ap-disc').value || 0;
+  const note = document.getElementById('ap-note').value.trim();
+  const pay = document.getElementById('ap-pay').value;
+  const services = [];
+  document.querySelectorAll('.svc-line').forEach(d=>{
+    const sel = d.querySelector('.svc-sel');
+    const o = sel.options[sel.selectedIndex];
+    services.push({ serviceId:+sel.value, price:+d.querySelector('.svc-price').value || 0, duration:+o.dataset.d });
+  });
+  if(!clientId || !date || !time || !services.length){ toast('Preencha cliente, data, horário e pelo menos um serviço'); return; }
+  const subtotal = services.reduce((t,s)=>t+s.price,0);
+  const price = Math.max(0, subtotal - discount);
+  if(hasConflict(date,time,state.editingApptId)){ toast('⚠️ Já existe agendamento neste horário'); return; }
+  if(state.editingApptId){
+    const a = db.appointments.find(x=>x.id===state.editingApptId);
+    Object.assign(a,{clientId,services,date,time,price,dur,note,discount,payment:pay}); save(); toast('Agendamento atualizado');
+  } else {
+    db.appointments.push({ id:nextId(db.appointments), clientId, services, date, time, price, duration:dur, status:'confirmado', note, discount,payment:pay });
+    save(); toast('Agendamento criado! ✅');
+  }
+  closeModal(); render(state.view);
+}
+function hasConflict(date,time,excludeId){
+  return db.appointments.some(a=>a.date===date && a.time===time && a.status!=='cancelado' && a.id!==excludeId);
+}
+function delAppt(id){
+  if(!confirm('Excluir este agendamento?')) return;
+  db.appointments = db.appointments.filter(a=>a.id!==id); save(); closeModal(); render(state.view); toast('Agendamento excluído');
+}
+
+/* ============ TELA CLIENTES ============ */
+function renderClientes(){
+  let html = `<h2>Clientes</h2>`;
+  html += `<div class="search"><input placeholder="🔍 Buscar cliente..." value="${esc(state.clientFilter)}" oninput="state.clientFilter=this.value;renderClientes()"></div>`;
+  html += `<button class="btn" onclick="openClientModal()">+ Nova cliente</button><div style="height:12px"></div>`;
+  const f = state.clientFilter.toLowerCase();
+  const list = db.clients.filter(c=>!f || c.name.toLowerCase().includes(f) || (c.whatsapp||'').includes(f)).sort((a,b)=>a.name.localeCompare(b.name));
+  if(!list.length) html += `<div class="empty">Nenhuma cliente encontrada.</div>`;
+  list.forEach(c=>{
+    const st = clientStats(c.id);
+    html += `<div class="card" style="cursor:pointer" onclick="openClientDetail(${c.id})">
+      <div class="row"><b>${esc(c.name)}</b>${st.daysSince!==null && st.daysSince>db.settings.noReturnDays ? `<span class="badge alert">Sem retorno há ${st.daysSince} dias</span>` : `<span class="badge ok">${st.lastAppt?`Retorno há ${st.daysSince} dias`:''}</span>`}</div>
+      ${c.whatsapp?`<div class="muted">📱 ${esc(c.whatsapp)}</div>`:''}
+      <div class="muted" style="margin-top:4px">${st.count} atendimento(s) · <span class="money">${fmtM(st.total)}</span></div>
+    </div>`;
+  });
+  document.getElementById('screen-clientes').innerHTML = html;
+}
+function clientStats(id){
+  const apps = db.appointments.filter(a=>a.clientId===id && a.status==='realizado');
+  const sales = db.sales.filter(s=>s.clientId===id);
+  const total = apps.reduce((t,a)=>t+a.price,0) + sales.reduce((t,s)=>t+s.total,0);
+  let lastAppt = null;
+  apps.forEach(a=>{ if(!lastAppt || a.date>lastAppt) lastAppt = a.date; });
+  const today = todayISO();
+  const daysSince = lastAppt ? Math.round((parseISO(today)-parseISO(lastAppt))/86400000) : null;
+  const freq = {};
+  apps.forEach(a=>{ (a.services||[]).forEach(s=>{ freq[s.serviceId] = (freq[s.serviceId]||0)+1; }); });
+  let topService = null, topCount = 0;
+  Object.entries(freq).forEach(([k,v])=>{ if(v>topCount){ topCount=v; topService=+k; } });
+  return { count: apps.length, total, lastAppt, daysSince, topService };
+}
+function openClientModal(id){
+  const c = id ? db.clients.find(x=>x.id===id) : null;
+  let html = `<h3>${c?'Editar':'Nova'} cliente <button class="modal-close" onclick="closeModal()">✕</button></h3>`;
+  html += `<label>Nome *</label><input id="cl-name" value="${esc(c?.name||'')}" placeholder="Nome completo">`;
+  html += `<label>WhatsApp</label><input id="cl-whats" value="${esc(c?.whatsapp||'')}" placeholder="(00) 00000-0000">`;
+  html += `<label>Observações</label><textarea id="cl-note" rows="3" placeholder="Preferências, alergias, histórico...">${esc(c?.notes||'')}</textarea>`;
+  html += `<button class="btn" onclick="saveClient(${c?.id||0})">💾 Salvar</button>`;
+  if(c) html += `<div style="height:8px"></div><button class="btn danger" onclick="delClient(${c.id})">🗑️ Excluir</button>`;
+  openModal(html);
+}
+function saveClient(id){
+  const name = document.getElementById('cl-name').value.trim();
+  if(!name){ toast('Informe o nome'); return; }
+  const whatsapp = document.getElementById('cl-whats').value.trim();
+  const notes = document.getElementById('cl-note').value.trim();
+  if(id){
+    const c = db.clients.find(x=>x.id===id); Object.assign(c,{name,whatsapp,notes}); toast('Cliente atualizada');
+  } else {
+    db.clients.push({ id:nextId(db.clients), name, whatsapp, notes, createdAt:todayISO() }); toast('Cliente cadastrada ✅');
+  }
+  save(); closeModal(); render(state.view);
+}
+function delClient(id){
+  if(!confirm('Excluir esta cliente e remover do histórico?')) return;
+  db.clients = db.clients.filter(c=>c.id!==id); save(); closeModal(); render('clientes'); toast('Cliente excluída');
+}
+function openClientDetail(id){
+  const c = clientById(id); if(!c) return;
+  const st = clientStats(id);
+  const svTop = st.topService ? serviceById(st.topService) : null;
+  const apps = db.appointments.filter(a=>a.clientId===id && a.status==='realizado').sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  const sales = db.sales.filter(s=>s.clientId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  let html = `<h3>${esc(c.name)} <button class="modal-close" onclick="closeModal()">✕</button></h3>`;
+  html += `<div class="muted">📱 ${esc(c.whatsapp||'Sem WhatsApp')} · Cadastro: ${fmtBR(c.createdAt)}</div>`;
+  if(c.notes) html += `<div class="muted" style="margin:6px 0">${esc(c.notes)}</div>`;
+  if(st.daysSince!==null && st.daysSince>db.settings.noReturnDays) html += `<div class="alert-line" style="margin:8px 0">⚠️ Cliente sem retorno há ${st.daysSince} dias</div>`;
+  html += `<div class="grid4" style="margin:12px 0">
+    <div class="statcard"><div class="v">${st.count}</div><div class="l">Atendimentos</div></div>
+    <div class="statcard"><div class="v money" style="font-size:15px">${fmtM(st.total)}</div><div class="l">Total gasto</div></div>
+    <div class="statcard"><div class="v" style="font-size:15px">${svTop?esc(svTop.name):'—'}</div><div class="l">Serviço top</div></div>
+    <div class="statcard"><div class="v" style="font-size:15px">${st.lastAppt?fmtBR(st.lastAppt):'—'}</div><div class="l">Última visita</div></div>
+  </div>`;
+  html += `<div style="display:flex;gap:8px;margin-bottom:12px"><button class="btn small ghost" onclick="openApptModal(null,null,${c.id})">+ Agendar</button><button class="btn small ghost" onclick="openSaleModal(null,${c.id})">+ Venda</button><button class="btn small ghost" onclick="openClientModal(${c.id})">✏️ Editar</button></div>`;
+  html += `<h3>Histórico</h3>`;
+  if(!apps.length && !sales.length) html += `<div class="empty">Sem atendimentos registrados ainda.</div>`;
+  apps.forEach(a=>{
+    const disc = a.discount>0 ? ` (com desconto de ${fmtM(a.discount)})` : '';
+    html += `<div class="dayitem"><div class="time" style="min-width:auto;font-size:12px">${fmtBR(a.date)}<br>${esc(a.time)}</div><div class="info"><b>${appServicesLabel(a)}</b><span>${a.duration} min${disc}</span></div><div class="money">${fmtM(a.price)}</div></div>`;
+  });
+  sales.forEach(s=>{
+    html += `<div class="dayitem"><div class="time" style="min-width:auto;font-size:12px">${fmtBR(s.date)}</div><div class="info"><b>Venda de produto</b><span>${s.items.map(i=>`${esc(productById(i.productId)?.name||'?')} x${i.qty}`).join(', ')} · ${esc(s.payment)}</span></div><div class="money">${fmtM(s.total)}</div></div>`;
+  });
+  openModal(html);
+}
+
+/* ============ SERVIÇOS ============ */
+function renderServicos(){
+  let html = `<h2>Serviços</h2><div class="sub">Cadastre o que você realiza no salão</div>`;
+  html += `<button class="btn" onclick="openServiceModal()">+ Novo serviço</button><div style="height:12px"></div>`;
+  db.services.forEach(s=>{
+    html += `<div class="card"><div class="row">
+      <div><b>${esc(s.name)}</b><div class="muted">${s.duration} min · <span class="money">${fmtM(s.price)}</span></div></div>
+      <div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">
+        <span class="badge ${s.active?'ok':'cancelado'}">${s.active?'Ativo':'Inativo'}</span>
+        <div style="display:flex;gap:6px"><button class="btn mini ghost" onclick="toggleService(${s.id})">${s.active?'Desativar':'Ativar'}</button><button class="btn mini ghost" onclick="openServiceModal(${s.id})">✏️</button></div>
+      </div></div></div>`;
+  });
+  openGenericScreen(html);
+}
+function toggleService(id){ const s = db.services.find(x=>x.id===id); s.active=!s.active; save(); renderServicos(); }
+function openServiceModal(id){
+  const s = id ? db.services.find(x=>x.id===id) : null;
+  let html = `<h3>${s?'Editar':'Novo'} serviço <button class="modal-close" onclick="closeModal()">✕</button></h3>`;
+  html += `<label>Nome *</label><input id="sv-name" value="${esc(s?.name||'')}" placeholder="Ex.: 6">`;
+  html += `<div class="grid2"><div><label>Preço (R$) *</label><input id="sv-price" type="number" value="${s?.price||''}" min="0" step="0.01"></div><div><label>Duração (min) *</label><input id="sv-dur" type="number" value="${s?.duration||60}" min="5"></div></div>`;
+  html += `<button class="btn" onclick="saveService(${s?.id||0})">💾 Salvar</button>`;
+  if(s) html += `<div style="height:8px"></div><button class="btn danger" onclick="delService(${s.id})">🗑️ Excluir</button>`;
+  openModal(html);
+}
+function saveService(id){
+  const name = document.getElementById('sv-name').value.trim();
+  const price = +document.getElementById('sv-price').value;
+  const duration = +document.getElementById('sv-dur').value;
+  if(!name || !price || !duration){ toast('Preencha nome, preço e duração'); return; }
+  if(id){ Object.assign(db.services.find(x=>x.id===id),{name,price,duration}); toast('Serviço atualizado'); }
+  else { db.services.push({ id:nextId(db.services), name, price, duration, active:true }); toast('Serviço criado ✅'); }
+  save(); closeModal(); renderServicos();
+}
+function delService(id){
+  if(!confirm('Excluir este serviço?')) return;
+  db.services = db.services.filter(s=>s.id!==id); save(); renderServicos();
+}
+
+/* ============ PRODUTOS ============ */
+function renderProdutos(){
+  let html = `<h2>Produtos</h2><div class="sub">Produtos vendidos no salão</div>`;
+  html += `<button class="btn" onclick="openProductModal()">+ Novo produto</button><div style="height:12px"></div>`;
+  db.products.forEach(p=>{
+    html += `<div class="card"><div class="row">
+      <div><b>${esc(p.name)}</b><div class="muted"><span class="money">${fmtM(p.price)}</span></div></div>
+      <div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">
+        <span class="badge ${p.active?'ok':'cancelado'}">${p.active?'Ativo':'Inativo'}</span>
+        <div style="display:flex;gap:6px"><button class="btn mini ghost" onclick="toggleProduct(${p.id})">${p.active?'Desativar':'Ativar'}</button><button class="btn mini ghost" onclick="openProductModal(${p.id})">✏️</button></div>
+      </div></div></div>`;
+  });
+  openGenericScreen(html);
+}
+function toggleProduct(id){ const p = db.products.find(x=>x.id===id); p.active=!p.active; save(); renderProdutos(); }
+function openProductModal(id){
+  const p = id ? db.products.find(x=>x.id===id) : null;
+  let html = `<h3>${p?'Editar':'Novo'} produto <button class="modal-close" onclick="closeModal()">✕</button></h3>`;
+  html += `<label>Nome *</label><input id="pd-name" value="${esc(p?.name||'')}" placeholder="Ex.: Máscara Hidratante">`;
+  html += `<label>Preço de venda (R$) *</label><input id="pd-price" type="number" value="${p?.price||''}" min="0" step="0.01">`;
+  html += `<button class="btn" onclick="saveProduct(${p?.id||0})">💾 Salvar</button>`;
+  if(p) html += `<div style="height:8px"></div><button class="btn danger" onclick="delProduct(${p.id})">🗑️ Excluir</button>`;
+  openModal(html);
+}
+function saveProduct(id){
+  const name = document.getElementById('pd-name').value.trim();
+  const price = +document.getElementById('pd-price').value;
+  if(!name || !price){ toast('Preencha nome e preço'); return; }
+  if(id){ Object.assign(db.products.find(x=>x.id===id),{name,price}); toast('Produto atualizado'); }
+  else { db.products.push({ id:nextId(db.products), name, price, active:true }); toast('Produto criado ✅'); }
+  save(); closeModal(); renderProdutos();
+}
+function delProduct(id){
+  if(!confirm('Excluir este produto?')) return;
+  db.products = db.products.filter(p=>p.id!==id); save(); renderProdutos();
+}
+
+/* ============ VENDAS ============ */
+function renderVendas(){
+  let html = `<h2>Vendas</h2><div class="sub">Vendas de produtos</div>`;
+  html += `<button class="btn" onclick="openSaleModal()">+ Registrar venda</button><div style="height:12px"></div>`;
+  const sales = [...db.sales].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!sales.length) html += `<div class="empty">Nenhuma venda registrada ainda.</div>`;
+  sales.forEach(s=>{
+    const cl = clientById(s.clientId);
+    html += `<div class="card"><div class="row">
+      <div><b>${esc(cl?.name||'Cliente removido')}</b><div class="muted">${fmtBR(s.date)} · ${esc(s.payment)}${s.note?` · ${esc(s.note)}`:''}</div>
+      <div class="muted">${s.items.map(i=>`${esc(productById(i.productId)?.name||'?')} x${i.qty} (${fmtM(i.unitPrice)})`).join(' · ')}</div></div>
+      <div style="text-align:right"><div class="money">${fmtM(s.total)}</div><button class="btn mini ghost" onclick="delSale(${s.id})">🗑️</button></div>
+    </div></div>`;
+  });
+  document.getElementById('screen-vendas').innerHTML = html;
+}
+function delSale(id){
+  if(!confirm('Excluir esta venda?')) return;
+  db.sales = db.sales.filter(s=>s.id!==id); save(); render('vendas'); toast('Venda excluída');
+}
+function openSaleModal(apptId, presetClient){
+  const appt = apptId ? db.appointments.find(a=>a.id===apptId) : null;
+  state.saleApptId = apptId || null;
+  const clientId = presetClient || appt?.clientId || '';
+  const date = appt ? appt.date : todayISO();
+  let html = `<h3>Registrar venda <button class="modal-close" onclick="closeModal()">✕</button></h3>`;
+  html += `<label>Cliente</label><select id="sl-client"><option value="">— Selecione —</option>${db.clients.map(c=>`<option value="${c.id}" ${clientId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select>`;
+  html += `<label>Data</label><input type="date" id="sl-date" value="${date}">`;
+  html += `<label>Produtos</label><div id="sl-items"></div>`;
+  html += `<button class="btn small ghost" onclick="addSaleItem()">+ Adicionar produto</button>`;
+  html += `<div style="height:12px"></div><div class="row"><b>Total:</b><span class="money" id="sl-total" style="font-size:20px">R$ 0,00</span></div>`;
+  html += `<label>Forma de pagamento</label><select id="sl-pay">${PAY.map(p=>`<option ${p==='Pix'?'selected':''}>${p}</option>`).join('')}</select>`;
+  html += `<label>Observação</label><input id="sl-note" placeholder="Opcional" value="${appt?`Vendido durante atendimento de ${appServicesLabel(appt)}`:''}">`;
+  html += `<button class="btn" onclick="saveSale()">💾 Salvar venda</button>`;
+  openModal(html);
+  addSaleItem();
+}
+function addSaleItem(){
+  const wrap = document.getElementById('sl-items');
+  const div = document.createElement('div');
+  div.className = 'sale-item';
+  div.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center';
+  div.innerHTML = `<select class="si-p" style="flex:1;margin:0">${db.products.filter(p=>p.active).map(p=>`<option value="${p.id}" data-p="${p.price}">${esc(p.name)}</option>`).join('')}</select>
+  <input type="number" class="si-q" value="1" min="1" style="width:58px;margin:0;text-align:center">
+  <input type="number" class="si-u" value="${db.products[0]?.price||0}" min="0" step="0.01" style="width:80px;margin:0">
+  <button class="btn mini danger" onclick="this.parentElement.remove();calcSaleTotal()">✕</button>`;
+  div.querySelector('.si-p').onchange = function(){ div.querySelector('.si-u').value = this.options[this.selectedIndex].dataset.p; calcSaleTotal(); };
+  wrap.appendChild(div);
+  div.querySelector('.si-q').oninput = calcSaleTotal;
+  div.querySelector('.si-u').oninput = calcSaleTotal;
+  calcSaleTotal();
+}
+function calcSaleTotal(){
+  const items = document.querySelectorAll('.sale-item');
+  let total = 0;
+  items.forEach(d=>{
+    const q = +d.querySelector('.si-q').value||0, u = +d.querySelector('.si-u').value||0;
+    total += q*u;
+  });
+  const el = document.getElementById('sl-total'); if(el) el.textContent = fmtM(total);
+}
+function saveSale(){
+  const clientId = +document.getElementById('sl-client').value;
+  const date = document.getElementById('sl-date').value;
+  const pay = document.getElementById('sl-pay').value;
+  const note = document.getElementById('sl-note').value.trim();
+  const items = [];
+  document.querySelectorAll('.sale-item').forEach(d=>{
+    const pid = +d.querySelector('.si-p').value, q = +d.querySelector('.si-q').value, u = +d.querySelector('.si-u').value;
+    if(pid && q>0) items.push({ productId:pid, qty:q, unitPrice:u });
+  });
+  if(!items.length){ toast('Adicione pelo menos um produto'); return; }
+  if(!clientId){ toast('Selecione a cliente'); return; }
+  const total = items.reduce((t,i)=>t+i.qty*i.unitPrice,0);
+  db.sales.push({ id:nextId(db.sales), clientId, date, items, total, payment:pay, note, appointmentId:state.saleApptId||null });
+  save(); closeModal(); render(state.view); toast('Venda registrada ✅');
+}
+function openSaleFromAppt(apptId){
+  state.saleApptId = apptId;
+  openSaleModal(apptId);
+}
+
+/* ============ RESULTADOS ============ */
+function renderResultados(){
+  let html = `<h2>Resultados</h2>`;
+  html += `<div class="calnav"><button onclick="navMonth(-1)">‹</button><input type="month" id="res-month" value="${state.resMonth}" onchange="state.resMonth=this.value;renderResultados()" style="width:auto;text-align:center;margin:0"><button onclick="navMonth(1)">›</button></div>`;
+  const r = monthStats(state.resMonth);
+  html += `<div class="grid2">
+    <div class="statcard"><div class="v">${r.clients}</div><div class="l">Clientes atendidas</div></div>
+    <div class="statcard"><div class="v">${r.count}</div><div class="l">Atendimentos</div></div>
+    <div class="statcard"><div class="v money" style="font-size:18px">${fmtM(r.svcRev)}</div><div class="l">Faturamento serviços</div></div>
+    <div class="statcard"><div class="v money" style="font-size:18px">${fmtM(r.prodRev)}</div><div class="l">Faturamento produtos</div></div>
+    <div class="statcard"><div class="v money" style="font-size:18px">${fmtM(r.total)}</div><div class="l">Faturamento total</div></div>
+    <div class="statcard"><div class="v money" style="font-size:18px">${fmtM(r.ticket)}</div><div class="l">Ticket médio</div></div>
+    <div class="statcard"><div class="v">${r.products}</div><div class="l">Produtos vendidos</div></div>
+    <div class="statcard"><div class="v">${r.cancelled}</div><div class="l">Cancelados</div></div>
+  </div>`;
+  html += '<div class="card"><h3>💳 Formas de pagamento</h3>' + Object.entries(r.payments||{}).map(([p,v])=>'<div class="row"><span>'+esc(p)+'</span><span class="money">'+fmtM(v)+'</span></div>').join('') + '</div>';
+  html += `<div style="height:14px"></div><button class="btn ghost" onclick="go('resultados')">🗓️ Ver relatórios</button>`;
+  document.getElementById('screen-resultados').innerHTML = html;
+}
+function navMonth(n){
+  const [y,m] = state.resMonth.split('-').map(Number);
+  const d = new Date(y, m-1+n, 1);
+  state.resMonth = iso(d).slice(0,7); renderResultados();
+}
+function monthStats(key){
+  const apps = db.appointments.filter(a=>a.date.slice(0,7)===key);
+  const done = apps.filter(a=>a.status==='realizado');
+  const svcRev = done.reduce((s,a)=>s+a.price,0);
+  const sales = db.sales.filter(s=>s.date.slice(0,7)===key);
+  const prodRev = sales.reduce((s,x)=>s+x.total,0);
+  const products = sales.reduce((s,x)=>s+x.items.reduce((t,i)=>t+i.qty,0),0);
+  const payments = {};
+  sales.forEach(x=>{
+  payments[x.payment] = (payments[x.payment] || 0) + x.total;
+});
+  return { clients:new Set(done.map(a=>a.clientId)).size, count:done.length, svcRev, prodRev, total:svcRev+prodRev, ticket:done.length? (svcRev+prodRev)/done.length : 0, products,payments,cancelled:apps.filter(a=>a.status==='cancelado').length };
+}
+function periodStats(from,to){
+  const apps = db.appointments.filter(a=>a.status==='realizado' && a.date>=from && a.date<=to);
+  const sales = db.sales.filter(s=>s.date>=from && s.date<=to);
+  const svcRev = apps.reduce((s,a)=>s+a.price,0);
+  const prodRev = sales.reduce((s,x)=>s+x.total,0);
+  return { clients:new Set(apps.map(a=>a.clientId)).size, count:apps.length, svcRev, prodRev, total:svcRev+prodRev, ticket:apps.length?(svcRev+prodRev)/apps.length:0, products:sales.reduce((s,x)=>s+x.items.reduce((t,i)=>t+i.qty,0),0) };
+}
+function saveSale(){
+  const clientId = +document.getElementById('sl-client').value;
+  const date = document.getElementById('sl-date').value;
+  const pay = document.getElementById('sl-pay').value;
+  const note = document.getElementById('sl-note').value.trim();
+  const items = [];
+  document.querySelectorAll('.sale-item').forEach(d=>{
+    const pid = +d.querySelector('.si-p').value, q = +d.querySelector('.si-q').value, u = +d.querySelector('.si-u').value;
+    if(pid && q>0) items.push({ productId:pid, qty:q, unitPrice:u });
+  });
+  if(!items.length){ toast('Adicione pelo menos um produto'); return; }
+  if(!clientId){ toast('Selecione a cliente'); return; }
+  const total = items.reduce((t,i)=>t+i.qty*i.unitPrice,0);
+  db.sales.push({ id:nextId(db.sales), clientId, date, items, total, payment:pay, note, appointmentId:state.saleApptId||null });
+  save(); closeModal(); render(state.view); toast('Venda registrada ✅');
+}
+
+/* ============ RELATÓRIOS ============ */
+function renderRelatorios(){
+  const t = todayISO();
+  const ws = weekStart(t);
+  const we = addDays(ws,6);
+  const mk = monthKey(t);
+  const prev = (()=>{ const [y,m]=mk.split('-').map(Number); const d=new Date(y,m-2,1); return iso(d).slice(0,7); })();
+  const day = periodStats(t,t), week = periodStats(ws,we), month = periodStats(t.slice(0,7)+'-01', t.slice(0,7)+'-31');
+  const mCur = monthStats(mk), mPrev = monthStats(prev);
+  const pct = (cur,prev)=> prev>0 ? Math.round((cur-prev)/prev*100) : (cur>0?100:0);
+  const arrow = v => v>0?`⬆️ +${v}%` : v<0?`⬇️ ${v}%` : '—';
+  let html = `<h2>Relatórios</h2><div class="sub">Resultado de ${fmtBRfull(t)}</div>`;
+  html += `<div class="card"><h3>📅 Resultado do dia</h3>
+    <div class="row"><span>Faturamento total</span><span class="money">${fmtM(day.total)}</span></div>
+    <div class="row"><span>Atendimentos</span><span>${day.count}</span></div>
+    <div class="row"><span>Clientes</span><span>${day.clients}</span></div>
+    <div class="row"><span>Ticket médio</span><span class="money">${fmtM(day.ticket)}</span></div></div>`;
+  html += `<div class="card"><h3>🗓️ Resultado da semana</h3>
+    <div class="muted" style="margin-bottom:8px">${fmtBR(ws)} a ${fmtBR(we)}</div>
+    <div class="row"><span>Faturamento total</span><span class="money">${fmtM(week.total)}</span></div>
+    <div class="row"><span>Serviços</span><span class="money">${fmtM(week.svcRev)}</span></div>
+    <div class="row"><span>Produtos</span><span class="money">${fmtM(week.prodRev)}</span></div>
+    <div class="row"><span>Atendimentos</span><span>${week.count}</span></div>
+    <div class="row"><span>Clientes</span><span>${week.clients}</span></div></div>`;
+  html += `<div class="card"><h3>📆 Resultado do mês</h3>
+    <div class="muted" style="margin-bottom:8px">${parseISO(mk+'-01').toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</div>
+    <div class="row"><span>Faturamento total</span><span class="money">${fmtM(month.total)}</span></div>
+    <div class="row"><span>Serviços</span><span class="money">${fmtM(month.svcRev)}</span></div>
+    <div class="row"><span>Produtos</span><span class="money">${fmtM(month.prodRev)}</span></div>
+    <div class="row"><span>Atendimentos</span><span>${month.count}</span></div>
+    <div class="row"><span>Clientes</span><span>${month.clients}</span></div></div>`;
+  html += `<div class="card"><h3>📊 Comparativo: mês atual vs. mês anterior</h3>`;
+  const maxV = Math.max(mCur.total, mPrev.total, 1);
+  html += `<div class="row" style="margin-top:8px"><span class="muted">Faturamento mês anterior</span><span class="money">${fmtM(mPrev.total)}</span></div><div class="bar-wrap"><div class="bar" style="width:${Math.round(mPrev.total/maxV*100)}%"></div></div>`;
+  html += `<div class="row" style="margin-top:8px"><span class="muted">Faturamento mês atual</span><span class="money">${fmtM(mCur.total)}</span></div><div class="bar-wrap"><div class="bar" style="width:${Math.round(mCur.total/maxV*100)}%"></div></div>`;
+  html += `<div class="row" style="margin-top:10px"><b>Evolução do faturamento</b><b>${arrow(pct(mCur.total,mPrev.total))}</b></div>`;
+  html += `<div class="row"><b>Evolução de clientes</b><b>${arrow(pct(mCur.clients,mPrev.clients))}</b></div>`;
+  html += `<div class="muted" style="margin-top:8px">${mPrev.total>0?`Mês anterior: ${mCur.count} atendimentos vs. ${mPrev.count} do mês anterior`:''}</div></div>`;
+  openGenericScreen(html);
+}
+
+/* ============ CONFIGURAÇÕES ============ */
+function renderConfig(){
+  let html = `<h2>Configurações</h2><div class="sub">Ajustes do aplicativo</div>`;
+  html += `<div class="card"><h3>⏰ Alerta de retorno de clientes</h3>
+    <label>Considerar cliente "sem retorno" após (dias)</label>
+    <input type="number" id="cf-days" value="${db.settings.noReturnDays}" min="1">
+    <button class="btn" onclick="saveConfig()">💾 Salvar</button></div>`;
+  html += `<div class="card"><h3>💾 Dados</h3>
+    <button class="btn ghost" onclick="exportData()">📤 Exportar dados (backup)</button><div style="height:8px"></div>
+    <button class="btn danger" onclick="resetData()">⚠️ Apagar todos os dados</button></div>`;
+  html += `<div class="card"><div class="muted">Agenda Allan — app pessoal do cabeleireiro. Dados salvos apenas neste dispositivo.</div></div>`;
+  openGenericScreen(html);
+}
+function saveConfig(){
+  db.settings.noReturnDays = +document.getElementById('cf-days').value || 30;
+  save(); toast('Configurações salvas');
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(db,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'agenda-allan-backup.json'; a.click();
+  toast('Backup exportado');
+}
+function resetData(){
+  if(!confirm('Apagar TODOS os dados? Esta ação não pode ser desfeita.')) return;
+  db = seed(); save(); state.view='inicio'; go('inicio'); toast('Dados apagados');
+}
+
+/* ============ TELAS AVULSAS (menu) ============ */
+function openGenericScreen(html){
+  const scr = document.querySelector('#screen-resultados');
+  const s = document.createElement('section');
+  s.className = 'screen active'; s.id = 'screen-generic'; s.innerHTML = html;
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  scr.parentElement.appendChild(s);
+  document.querySelectorAll('#bottomnav button').forEach(b=>b.classList.toggle('on',false));
+  document.getElementById('fab').style.display = 'block';
+}
+
+/* ============ INICIALIZAÇÃO ============ */
+document.querySelectorAll('#bottomnav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.view)));
+renderInicio();
+</script>
+</body>
+</html>                                                                                                        
