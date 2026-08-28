@@ -883,7 +883,72 @@ renderInicio();
     window.addEventListener("load", () => {
       navigator.serviceWorker
         .register("./sw.js")
-        .then(() => console.log("Service Worker registrado"))
+ /* ============ TELAS AVULSAS (menu) ============ */
+
+  function openGenericScreen(html) {
+    const scr = document.querySelector("#screen-resultados");
+
+    if (!scr) {
+      console.error("Elemento #screen-resultados não encontrado.");
+      return;
+    }
+
+    const s = document.createElement("section");
+
+    s.className = "screen active";
+    s.id = "screen-generic";
+    s.innerHTML = html;
+
+    document.querySelectorAll(".screen").forEach((x) => {
+      x.classList.remove("active");
+    });
+
+    scr.parentElement.appendChild(s);
+
+    document.querySelectorAll("#bottomnav button").forEach((b) => {
+      b.classList.remove("on");
+    });
+
+    const fab = document.getElementById("fab");
+
+    if (fab) {
+      fab.style.display = "block";
+    }
+  }
+
+  /* ============ INICIALIZAÇÃO ============ */
+
+  if (typeof renderInicio === "function") {
+    renderInicio();
+  }
+
+  document.querySelectorAll("#bottomnav button").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (typeof go === "function") {
+        go(button.dataset.view);
+      }
+    });
+  });
+
+</script>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("./sw.js")
+        .then(() => {
+          console.log("Service Worker registrado");
+        })
+        .catch((error) => {
+          console.error("Erro no Service Worker:", error);
+        });
+    });
+  }
+</script>
+
+</body>
+</html>        .then(() => console.log("Service Worker registrado"))
         .catch(error => {
           console.error("Erro no Service Worker:", error);
         });
@@ -893,17 +958,7 @@ renderInicio();
 
 </body>
 </html>
-/* ============ TELAS AVULSAS (menu) ============ */
-<script>
-function openGenericScreen(html){
-  const scr = document.querySelector('#screen-resultados');
-  const s = document.createElement('section');
-  s.className = 'screen active'; s.id = 'screen-generic'; s.innerHTML = html;
-  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
-  scr.parentElement.appendChild(s);
-  document.querySelectorAll('#bottomnav button').forEach(b=>b.classList.toggle('on',false));
-  document.getElementById('fab').style.display = 'block';
-}
+
 
 /* ============ INICIALIZAÇÃO ============ */
                                                                                                         
