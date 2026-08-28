@@ -8,6 +8,9 @@
   "orientation": "portrait",
   "background_color": "#0c0c0e",
   "theme_color": "#0c0c0e",
+  <link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="./icon-192.png">
   "icons": [
   {
     "src": "./icon-192.png",
