@@ -1,28 +1,25 @@
 {
-  "name": "Agenda Allan — Beleza Capilar",
+  "name": "Agenda Allan",
   "short_name": "Agenda Allan",
-  "description": "Gestão de agenda, clientes e vendas do salão",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0c0c0e",
   "theme_color": "#0c0c0e",
-  <link rel="manifest" href="./manifest.json">
-<link rel="icon" href="./icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="./icon-192.png">
+  "description": "Agenda e gestão do salão Agenda Allan",
   "icons": [
-  {
-    "src": "./icon-192.png",
-    "sizes": "192x192",
-    "type": "image/png",
-    "purpose": "any maskable"
-  },
-  {
-    "src": "./icon-512.png",
-    "sizes": "512x512",
-    "type": "image/png",
-    "purpose": "any maskable"
-  }
-]
-  
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
