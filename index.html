@@ -871,7 +871,28 @@ function resetData(){
   if(!confirm('Apagar TODOS os dados? Esta ação não pode ser desfeita.')) return;
   db = seed(); save(); state.view='inicio'; go('inicio'); toast('Dados apagados');
 }
+document.querySelectorAll('#bottomnav button').forEach(b =>
+  b.addEventListener('click', () => go(b.dataset.view))
+);
 
+renderInicio();
+</script>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("./sw.js")
+        .then(() => console.log("Service Worker registrado"))
+        .catch(error => {
+          console.error("Erro no Service Worker:", error);
+        });
+    });
+  }
+</script>
+
+</body>
+</html>
 /* ============ TELAS AVULSAS (menu) ============ */
 function openGenericScreen(html){
   const scr = document.querySelector('#screen-resultados');
@@ -884,17 +905,4 @@ function openGenericScreen(html){
 }
 
 /* ============ INICIALIZAÇÃO ============ */
-document.querySelectorAll('#bottomnav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.view)));
-renderInicio();
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("./sw.js")
-        .then(() => console.log("Service Worker registrado"))
-        .catch(error => console.error("Erro no Service Worker:", error));
-    });
-  }
-</script>
-</body>
-</html>                                                                                                        
+                                                                                                        
