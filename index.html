@@ -240,6 +240,34 @@ function openMenu(){ document.getElementById('ovl-menu').classList.add('show'); 
 function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
 function openModal(html){ document.getElementById('generic-content').innerHTML = html; document.getElementById('ovl-generic').classList.add('show'); }
 function closeModal(){ closeOverlay('ovl-generic'); }
+function openGenericScreen(html){
+  let screen = document.getElementById('screen-generic');
+
+  if(!screen){
+    screen = document.createElement('section');
+    screen.id = 'screen-generic';
+    screen.className = 'screen';
+    document.querySelector('main').appendChild(screen);
+  }
+
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+  });
+
+  screen.classList.add('active');
+  screen.innerHTML = html;
+
+  document.querySelectorAll('#bottomnav button').forEach(button => {
+    button.classList.remove('on');
+  });
+
+  const fab = document.getElementById('fab');
+
+  if(fab){
+    fab.style.display = 'none';
+  }
+}
+  
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.style.display = 'block';
@@ -885,12 +913,7 @@ document.querySelectorAll('#bottomnav button').forEach(b =>
 renderInicio();
 </script>
 
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("./sw.js")
- /* ============ TELAS AVULSAS (menu) ============ */
+* ============ TELAS AVULSAS (menu) ============ */
 
   function openGenericScreen(html) {
     const scr = document.querySelector("#screen-resultados");
@@ -943,7 +966,7 @@ renderInicio();
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker
-        .register("./sw.js")
+        .register("./sw.js")        
         .then(() => {
           console.log("Service Worker registrado");
         })
