@@ -37,6 +37,7 @@ h3{font-size:15px;margin-bottom:10px;color:var(--gold)}
 .btn.small{padding:8px 12px;font-size:13px;width:auto;border-radius:10px}
 .btn.danger{background:transparent;color:var(--red);border:1px solid var(--red)}
 .btn.mini{padding:6px 10px;font-size:12px;width:auto;border-radius:8px}
+.icon-btn{background:var(--card2);border:1px solid var(--line);color:var(--text);width:40px;height:40px;border-radius:12px;font-size:18px;cursor:pointer}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .shortcut{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer}
@@ -108,9 +109,38 @@ label{display:block;font-size:12px;color:var(--muted);margin:2px 0 5px;font-weig
 .svc-line select{flex:1;margin:0;padding:10px;min-width:140px}
 .svc-line .svc-price{width:90px;margin:0;padding:10px;text-align:center}
 .svc-line .svc-dur{font-size:11px;color:var(--muted);min-width:50px;text-align:center}
+/* ===== TELA DE LOGIN ===== */
+#auth-screen{position:fixed;inset:0;z-index:300;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.auth-box{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px 22px}
+.auth-brand{text-align:center;margin-bottom:20px}
+.auth-brand h1{font-size:22px;font-weight:800;color:var(--gold);letter-spacing:1px}
+.auth-brand span{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:11px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--line)}
+.auth-link{display:block;width:100%;background:none;border:none;color:var(--muted);font-size:12px;margin-top:12px;cursor:pointer;text-align:center;text-decoration:underline}
   </style>
 </head>
 <body>
+
+<!-- ===== TELA DE LOGIN ===== -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-brand"><h1>AGENDA ALLAN</h1><span>Beleza Capilar · Gestão</span></div>
+    <button class="btn" onclick="loginGoogle()">🔐 Entrar com Google</button>
+    <div class="auth-divider"><span>ou use seu e-mail</span></div>
+    <div id="auth-register-name" style="display:none">
+      <label>Nome</label>
+      <input id="auth-name" placeholder="Seu nome">
+    </div>
+    <label>E-mail</label>
+    <input type="email" id="auth-email" placeholder="seu@email.com" autocomplete="email">
+    <label>Senha</label>
+    <input type="password" id="auth-pass" placeholder="Sua senha (mín. 6 caracteres)" autocomplete="current-password">
+    <button class="btn" id="auth-submit" onclick="authSubmit()">Entrar</button>
+    <button class="btn ghost" id="auth-toggle" onclick="authToggleMode()">Criar conta</button>
+    <button class="auth-link" onclick="authReset()">Esqueci minha senha</button>
+  </div>
+</div>
 
 <header>
   <div class="brand"><h1>AGENDA ALLAN</h1><span>Beleza Capilar · Gestão</span></div>
@@ -153,12 +183,32 @@ label{display:block;font-size:12px;color:var(--muted);margin:2px 0 5px;font-weig
 
 <div class="msg" id="toast"></div>
 
-<script>
-/* ============ BANCO DE DADOS (localStorage) ============ */
-const PAY = ['Pix','Dinheiro','Débito','Crédito','Outro'];
-let db = load();
+<!-- ===== FIREBASE ===== -->
+<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore-compat.js"></script>
 
-function load(){
+<script>
+/* ============ FIREBASE INIT ============ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCzT95SdBEzOvinTFf_44Qk7-jLM-IUeJM",
+  authDomain: "agenda-allan-cc442.firebaseapp.com",
+  projectId: "agenda-allan-cc442",
+  storageBucket: "agenda-allan-cc442.firebasestorage.app",
+  messagingSenderId: "646440000610",
+  appId: "1:646440000610:web:229a36825e92fe24b0c53b"
+};
+firebase.initializeApp(firebaseConfig);
+const AUTH = firebase.auth();
+const FDB = firebase.firestore();
+
+/* ============ BANCO DE DADOS (localStorage -> Firestore) ============ */
+const PAY = ['Pix','Dinheiro','Débito','Crédito','Outro'];
+let db = null;
+let currentUser = null;
+let migratedFlag = false;
+
+function loadLocal(){
   try{
     const d = JSON.parse(localStorage.getItem('agendaAllan'));
     if(d && d.clients){
@@ -177,7 +227,7 @@ function seed(){
       {id:2,name:'Escova',price:50,duration:50,active:true},
       {id:3,name:'Coloração',price:120,duration:120,active:true},
       {id:4,name:'Hidratação',price:80,duration:60,active:true},
-      {id:5,name:'Progressiva',price:250,duration:150,active:true}
+      {id:5,name:'Progressiva',price:250,duration:150,active:150}
     ],
     products: [
       {id:1,name:'Máscara Hidratante — Fórmula Exclusiva',price:90,active:true}
@@ -188,8 +238,101 @@ function seed(){
   };
 }
 
-function save(){ localStorage.setItem('agendaAllan', JSON.stringify(db)); }
+function save(){
+  localStorage.setItem('agendaAllan', JSON.stringify(db));
+  if(currentUser){
+    FDB.collection('users').doc(currentUser.uid).set(db)
+      .catch(() => toast('⚠️ Sem conexão — salvo apenas no aparelho'));
+  }
+}
+
+async function loadData(uid){
+  try{
+    const snap = await FDB.collection('users').doc(uid).get();
+    if(snap.exists){
+      db = snap.data();
+      if(!db.settings) db.settings = { noReturnDays: 30 };
+      localStorage.setItem('agendaAllan', JSON.stringify(db));
+    } else {
+      // primeira vez: migra do localStorage (ou começa vazio)
+      db = loadLocal();
+      await FDB.collection('users').doc(uid).set(db);
+      migratedFlag = true;
+    }
+  }catch(e){
+    db = loadLocal();
+    toast('⚠️ Sem conexão — usando dados locais');
+  }
+}
+
 function nextId(arr){ return arr.length ? Math.max(...arr.map(i=>i.id)) + 1 : 1; }
+
+/* ============ AUTENTICAÇÃO ============ */
+let authMode = 'login';
+
+function loginGoogle(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  AUTH.signInWithPopup(provider).catch(e => toast('Erro: ' + authError(e)));
+}
+
+function authToggleMode(){
+  authMode = authMode === 'login' ? 'register' : 'login';
+  document.getElementById('auth-register-name').style.display = authMode === 'register' ? 'block' : 'none';
+  document.getElementById('auth-submit').textContent = authMode === 'login' ? 'Entrar' : 'Criar conta';
+  document.getElementById('auth-toggle').textContent = authMode === 'login' ? 'Criar conta' : 'Já tenho conta';
+}
+
+function authSubmit(){
+  const email = document.getElementById('auth-email').value.trim();
+  const pass = document.getElementById('auth-pass').value;
+  if(!email || !pass){ toast('Preencha e-mail e senha'); return; }
+  if(authMode === 'register'){
+    const name = document.getElementById('auth-name').value.trim();
+    AUTH.createUserWithEmailAndPassword(email, pass)
+      .then(cred => {
+        if(name) cred.user.updateProfile({ displayName: name });
+        toast('Conta criada! ✅');
+      })
+      .catch(e => toast('Erro: ' + authError(e)));
+  } else {
+    AUTH.signInWithEmailAndPassword(email, pass)
+      .catch(e => toast('Erro: ' + authError(e)));
+  }
+}
+
+function authReset(){
+  const email = document.getElementById('auth-email').value.trim();
+  if(!email){ toast('Digite seu e-mail primeiro'); return; }
+  AUTH.sendPasswordResetEmail(email)
+    .then(() => toast('E-mail de redefinição enviado! 📧'))
+    .catch(e => toast('Erro: ' + authError(e)));
+}
+
+function logout(){
+  if(!confirm('Sair da sua conta?')) return;
+  AUTH.signOut().then(() => {
+    db = null;
+    localStorage.removeItem('agendaAllan');
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  });
+}
+
+function authError(e){
+  const map = {
+    'auth/invalid-email':'E-mail inválido',
+    'auth/user-not-found':'Conta não encontrada',
+    'auth/wrong-password':'Senha incorreta',
+    'auth/email-already-in-use':'Este e-mail já está cadastrado',
+    'auth/weak-password':'Senha muito fraca (mínimo 6 caracteres)',
+    'auth/too-many-requests':'Muitas tentativas. Aguarde um pouco.',
+    'auth/invalid-credential':'E-mail ou senha incorretos',
+    'auth/popup-closed-by-user':'Login cancelado',
+    'auth/network-request-failed':'Sem conexão com a internet',
+    'auth/operation-not-allowed':'Login desativado. Ative no Firebase.'
+  };
+  return map[e.code] || e.message;
+}
 
 /* ============ HELPERS ============ */
 const fmtM = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -206,6 +349,10 @@ function serviceById(id){ return db.services.find(s=>s.id===id); }
 function productById(id){ return db.products.find(p=>p.id===id); }
 function clientById(id){ return db.clients.find(c=>c.id===id); }
 function greeting(){ const h = new Date().getHours(); return h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'; }
+function userName(){
+  if(!currentUser) return 'Olá';
+  return currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Olá');
+}
 
 /* ============ NAVEGAÇÃO ============ */
 let state = { view:'inicio', agendaTab:'dia', agendaCursor:todayISO(), selectedDay:todayISO(), clientFilter:'', saleClientId:'', resMonth:monthKey(todayISO()), saleApptId:null, editingApptId:null };
@@ -282,7 +429,7 @@ function renderInicio(){
   const next = db.appointments.filter(a=>a.date>=t && a.status==='confirmado').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0] || null;
   const clientsToday = new Set(dayApps.filter(a=>a.status!=='cancelado').map(a=>a.clientId)).size;
   const expected = dayApps.filter(a=>a.status!=='cancelado').reduce((s,a)=>s+a.price,0);
-  let html = `<h2>${greeting()}, Allan! 👋</h2><div class="sub">${fmtBRfull(t)}</div>`;
+  let html = `<h2>${greeting()}, ${esc(userName())}! 👋</h2><div class="sub">${fmtBRfull(t)}</div>`;
   html += `<div class="card"><div class="row"><div><div class="muted">Próximo atendimento</div>`;
   html += next ? `<b>${fmtBR(next.date)} às ${next.time}</b><div class="muted">${esc(clientById(next.clientId)?.name||'—')} · ${appServicesLabel(next)}</div>` : `<div class="muted">Nenhum agendamento futuro confirmado</div>`;
   html += `</div></div></div>`;
@@ -522,9 +669,9 @@ function saveAppt(){
   if(hasConflict(date,time,state.editingApptId)){ toast('⚠️ Já existe agendamento neste horário'); return; }
   if(state.editingApptId){
     const a = db.appointments.find(x=>x.id===state.editingApptId);
-    Object.assign(a,{clientId,services,date,time,price,dur,note,discount,payment:pay}); save(); toast('Agendamento atualizado');
+    Object.assign(a,{clientId,services,date,time,price,duration:dur,note,discount,payment:pay}); save(); toast('Agendamento atualizado');
   } else {
-    db.appointments.push({ id:nextId(db.appointments), clientId, services, date, time, price, duration:dur, status:'confirmado', note, discount,payment:pay });
+    db.appointments.push({ id:nextId(db.appointments), clientId, services, date, time, price, duration:dur, status:'confirmado', note, discount, payment:pay });
     save(); toast('Agendamento criado! ✅');
   }
   closeModal(); render(state.view);
@@ -894,6 +1041,10 @@ function renderRelatorios(){
 /* ============ CONFIGURAÇÕES ============ */
 function renderConfig(){
   let html = `<h2>Configurações</h2><div class="sub">Ajustes do aplicativo</div>`;
+  html += `<div class="card"><h3>👤 Conta</h3>
+    <div class="muted">Logado como: ${esc(currentUser?.email||'')}</div>
+    <div style="height:8px"></div>
+    <button class="btn danger" onclick="logout()">🚪 Sair da conta</button></div>`;
   html += `<div class="card"><h3>⏰ Alerta de retorno de clientes</h3>
     <label>Considerar cliente "sem retorno" após (dias)</label>
     <input type="number" id="cf-days" value="${db.settings.noReturnDays}" min="1">
@@ -901,7 +1052,7 @@ function renderConfig(){
   html += `<div class="card"><h3>💾 Dados</h3>
     <button class="btn ghost" onclick="exportData()">📤 Exportar dados (backup)</button><div style="height:8px"></div>
     <button class="btn danger" onclick="resetData()">⚠️ Apagar todos os dados</button></div>`;
-  html += `<div class="card"><div class="muted">Agenda Allan — app pessoal do cabeleireiro. Dados salvos apenas neste dispositivo.</div></div>`;
+  html += `<div class="card"><div class="muted">Dados sincronizados com sua conta na nuvem. Você pode acessar de qualquer dispositivo.</div></div>`;
   openGenericScreen(html);
 }
 
@@ -927,7 +1078,19 @@ document.querySelectorAll('#bottomnav button').forEach(b =>
   b.addEventListener('click', () => go(b.dataset.view))
 );
 
-renderInicio();
+AUTH.onAuthStateChanged(async (user) => {
+  if(user){
+    currentUser = user;
+    await loadData(user.uid);
+    document.getElementById('auth-screen').style.display = 'none';
+    renderInicio();
+    if(migratedFlag){ toast('✅ Dados migrados para a nuvem!'); migratedFlag = false; }
+  } else {
+    currentUser = null;
+    db = null;
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+});
 </script>
 
 <script>
@@ -943,6 +1106,7 @@ renderInicio();
 
 </body>
 </html>
+
 
  
 
