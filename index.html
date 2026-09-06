@@ -2,22 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#0c0c0e">
-
- <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#0c0c0e">
-<link rel="icon" href="./icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="./icon-192.png">
-
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
   <title>Agenda Allan</title>
-</head>
-<style>
+  <style>
 :root{
   --bg:#0c0c0e;--card:#17171b;--card2:#202026;--line:#2a2a31;
   --gold:#d4af37;--gold2:#b8912e;--text:#f5f2ea;--muted:#9a9688;
@@ -117,7 +108,7 @@ label{display:block;font-size:12px;color:var(--muted);margin:2px 0 5px;font-weig
 .svc-line select{flex:1;margin:0;padding:10px;min-width:140px}
 .svc-line .svc-price{width:90px;margin:0;padding:10px;text-align:center}
 .svc-line .svc-dur{font-size:11px;color:var(--muted);min-width:50px;text-align:center}
-</style>
+  </style>
 </head>
 <body>
 
@@ -166,10 +157,18 @@ label{display:block;font-size:12px;color:var(--muted);margin:2px 0 5px;font-weig
 /* ============ BANCO DE DADOS (localStorage) ============ */
 const PAY = ['Pix','Dinheiro','Débito','Crédito','Outro'];
 let db = load();
+
 function load(){
-  try{ const d = JSON.parse(localStorage.getItem('agendaAllan')); if(d && d.clients) return d; }catch(e){}
+  try{
+    const d = JSON.parse(localStorage.getItem('agendaAllan'));
+    if(d && d.clients){
+      if(!d.settings) d.settings = { noReturnDays: 30 };
+      return d;
+    }
+  }catch(e){}
   return seed();
 }
+
 function seed(){
   return {
     clients: [],
@@ -188,6 +187,7 @@ function seed(){
     settings: { noReturnDays: 30 }
   };
 }
+
 function save(){ localStorage.setItem('agendaAllan', JSON.stringify(db)); }
 function nextId(arr){ return arr.length ? Math.max(...arr.map(i=>i.id)) + 1 : 1; }
 
@@ -225,6 +225,7 @@ function go(view){
   document.querySelectorAll('#bottomnav button').forEach(b=>b.classList.toggle('on', b.dataset.view===view));
   render(view);
 }
+
 function render(view){
   if(view==='inicio') renderInicio();
   if(view==='agenda') renderAgenda();
@@ -236,43 +237,34 @@ function render(view){
   if(view==='relatorios') renderRelatorios();
   if(view==='config') renderConfig();
 }
+
 function openMenu(){ document.getElementById('ovl-menu').classList.add('show'); }
 function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
 function openModal(html){ document.getElementById('generic-content').innerHTML = html; document.getElementById('ovl-generic').classList.add('show'); }
 function closeModal(){ closeOverlay('ovl-generic'); }
+
 function openGenericScreen(html){
   let screen = document.getElementById('screen-generic');
-
   if(!screen){
     screen = document.createElement('section');
     screen.id = 'screen-generic';
     screen.className = 'screen';
     document.querySelector('main').appendChild(screen);
   }
-
-  document.querySelectorAll('.screen').forEach(s => {
-    s.classList.remove('active');
-  });
-
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   screen.classList.add('active');
   screen.innerHTML = html;
-
-  document.querySelectorAll('#bottomnav button').forEach(button => {
-    button.classList.remove('on');
-  });
-
+  document.querySelectorAll('#bottomnav button').forEach(button => button.classList.remove('on'));
   const fab = document.getElementById('fab');
-
-  if(fab){
-    fab.style.display = 'none';
-  }
+  if(fab) fab.style.display = 'none';
 }
-  
+
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.style.display = 'block';
   clearTimeout(t._h); t._h = setTimeout(()=>t.style.display='none', 2600);
 }
+
 function fabAction(){
   if(state.view==='inicio') openApptModal();
   else if(state.view==='agenda') openApptModal();
@@ -311,10 +303,12 @@ function renderInicio(){
   dayApps.forEach(a=>{ html += apptItem(a); });
   document.getElementById('screen-inicio').innerHTML = html;
 }
+
 function appServicesLabel(a){
   if(!a.services || !a.services.length) return esc(serviceById(a.serviceId)?.name||'—');
   return a.services.map(s=>esc(serviceById(s.serviceId)?.name||'—')).join(' + ');
 }
+
 function apptItem(a){
   const cl = clientById(a.clientId);
   const disc = a.discount>0 ? ` <span class="muted" style="text-decoration:line-through">${fmtM(a.price + a.discount)}</span> <span class="gold">−${fmtM(a.discount)}</span>` : '';
@@ -339,12 +333,14 @@ function renderAgenda(){
   else html += renderAgendaMes();
   document.getElementById('screen-agenda').innerHTML = html;
 }
+
 function navDay(n){
   if(state.agendaTab==='dia') state.agendaCursor = addDays(state.agendaCursor, n);
   else if(state.agendaTab==='semana') state.agendaCursor = addDays(state.agendaCursor, n*7);
   else { const d = parseISO(state.agendaCursor); d.setMonth(d.getMonth()+n); state.agendaCursor = iso(d); }
   renderAgenda();
 }
+
 function renderAgendaDia(){
   const d = state.agendaCursor;
   const apps = db.appointments.filter(a=>a.date===d).sort((a,b)=>a.time.localeCompare(b.time));
@@ -354,6 +350,7 @@ function renderAgendaDia(){
   apps.forEach(a=> html += apptItem(a));
   return html;
 }
+
 function renderAgendaSemana(){
   const ws = weekStart(state.agendaCursor);
   let html = `<div class="calnav"><button onclick="navDay(-1)">‹</button><div class="lbl">Semana de ${fmtBR(ws)}</div><button onclick="navDay(1)">›</button></div>`;
@@ -380,6 +377,7 @@ function renderAgendaSemana(){
   }
   return html;
 }
+
 function renderAgendaMes(){
   const d = parseISO(state.agendaCursor);
   const y = d.getFullYear(), m = d.getMonth();
@@ -404,7 +402,7 @@ function renderAgendaMes(){
   return html;
 }
 
-/* ============ AGENDAMENTO (criar/editar) — MÚLTIPLOS SERVIÇOS + DESCONTO ============ */
+/* ============ AGENDAMENTO ============ */
 function openApptModal(id, presetDate){
   const a = id ? db.appointments.find(x=>x.id===id) : null;
   state.editingApptId = a ? a.id : null;
@@ -441,6 +439,7 @@ function openApptModal(id, presetDate){
   services.forEach(s=> addServiceLine(s.serviceId, s.price, s.duration));
   recalcTotals();
 }
+
 function addServiceLine(serviceId, price, duration){
   const wrap = document.getElementById('ap-services');
   if(!wrap) return;
@@ -464,6 +463,7 @@ function addServiceLine(serviceId, price, duration){
   wrap.appendChild(div);
   recalcTotals();
 }
+
 function recalcTotals(){
   const lines = document.querySelectorAll('.svc-line');
   let total = 0, dur = 0;
@@ -478,6 +478,7 @@ function recalcTotals(){
   const el = document.getElementById('ap-total'); if(el) el.textContent = fmtM(total);
   const du = document.getElementById('ap-dur'); if(du) du.value = dur;
 }
+
 function quickClient(){
   document.getElementById('ovl-generic').innerHTML = `<div class="modal"><h3>Nova cliente <button class="modal-close" onclick="closeModal()">✕</button></h3>
     <label>Nome *</label><input id="qc-name" placeholder="Nome completo">
@@ -485,6 +486,7 @@ function quickClient(){
     <label>Observações</label><textarea id="qc-note" rows="2"></textarea>
     <button class="btn" onclick="saveQuickClient()">Salvar cliente</button></div>`;
 }
+
 function saveQuickClient(){
   const name = document.getElementById('qc-name').value.trim();
   if(!name){ toast('Informe o nome da cliente'); return; }
@@ -494,10 +496,12 @@ function saveQuickClient(){
   if(sel){ const o = document.createElement('option'); o.value=c.id; o.textContent=c.name; o.selected=true; sel.appendChild(o); }
   toast('Cliente cadastrada!'); closeModal();
 }
+
 function setStatus(st){
   const a = db.appointments.find(x=>x.id===state.editingApptId);
   if(a){ a.status = st; save(); openApptModal(a.id); }
 }
+
 function saveAppt(){
   const clientId = +document.getElementById('ap-client').value;
   const date = document.getElementById('ap-date').value;
@@ -525,9 +529,11 @@ function saveAppt(){
   }
   closeModal(); render(state.view);
 }
+
 function hasConflict(date,time,excludeId){
   return db.appointments.some(a=>a.date===date && a.time===time && a.status!=='cancelado' && a.id!==excludeId);
 }
+
 function delAppt(id){
   if(!confirm('Excluir este agendamento?')) return;
   db.appointments = db.appointments.filter(a=>a.id!==id); save(); closeModal(); render(state.view); toast('Agendamento excluído');
@@ -551,6 +557,7 @@ function renderClientes(){
   });
   document.getElementById('screen-clientes').innerHTML = html;
 }
+
 function clientStats(id){
   const apps = db.appointments.filter(a=>a.clientId===id && a.status==='realizado');
   const sales = db.sales.filter(s=>s.clientId===id);
@@ -565,6 +572,7 @@ function clientStats(id){
   Object.entries(freq).forEach(([k,v])=>{ if(v>topCount){ topCount=v; topService=+k; } });
   return { count: apps.length, total, lastAppt, daysSince, topService };
 }
+
 function openClientModal(id){
   const c = id ? db.clients.find(x=>x.id===id) : null;
   let html = `<h3>${c?'Editar':'Nova'} cliente <button class="modal-close" onclick="closeModal()">✕</button></h3>`;
@@ -575,6 +583,7 @@ function openClientModal(id){
   if(c) html += `<div style="height:8px"></div><button class="btn danger" onclick="delClient(${c.id})">🗑️ Excluir</button>`;
   openModal(html);
 }
+
 function saveClient(id){
   const name = document.getElementById('cl-name').value.trim();
   if(!name){ toast('Informe o nome'); return; }
@@ -587,10 +596,12 @@ function saveClient(id){
   }
   save(); closeModal(); render(state.view);
 }
+
 function delClient(id){
   if(!confirm('Excluir esta cliente e remover do histórico?')) return;
   db.clients = db.clients.filter(c=>c.id!==id); save(); closeModal(); render('clientes'); toast('Cliente excluída');
 }
+
 function openClientDetail(id){
   const c = clientById(id); if(!c) return;
   const st = clientStats(id);
@@ -634,16 +645,19 @@ function renderServicos(){
   });
   openGenericScreen(html);
 }
+
 function toggleService(id){ const s = db.services.find(x=>x.id===id); s.active=!s.active; save(); renderServicos(); }
+
 function openServiceModal(id){
   const s = id ? db.services.find(x=>x.id===id) : null;
   let html = `<h3>${s?'Editar':'Novo'} serviço <button class="modal-close" onclick="closeModal()">✕</button></h3>`;
-  html += `<label>Nome *</label><input id="sv-name" value="${esc(s?.name||'')}" placeholder="Ex.: 6">`;
+  html += `<label>Nome *</label><input id="sv-name" value="${esc(s?.name||'')}" placeholder="Ex.: Corte de Cabelo">`;
   html += `<div class="grid2"><div><label>Preço (R$) *</label><input id="sv-price" type="number" value="${s?.price||''}" min="0" step="0.01"></div><div><label>Duração (min) *</label><input id="sv-dur" type="number" value="${s?.duration||60}" min="5"></div></div>`;
   html += `<button class="btn" onclick="saveService(${s?.id||0})">💾 Salvar</button>`;
   if(s) html += `<div style="height:8px"></div><button class="btn danger" onclick="delService(${s.id})">🗑️ Excluir</button>`;
   openModal(html);
 }
+
 function saveService(id){
   const name = document.getElementById('sv-name').value.trim();
   const price = +document.getElementById('sv-price').value;
@@ -653,6 +667,7 @@ function saveService(id){
   else { db.services.push({ id:nextId(db.services), name, price, duration, active:true }); toast('Serviço criado ✅'); }
   save(); closeModal(); renderServicos();
 }
+
 function delService(id){
   if(!confirm('Excluir este serviço?')) return;
   db.services = db.services.filter(s=>s.id!==id); save(); renderServicos();
@@ -672,7 +687,9 @@ function renderProdutos(){
   });
   openGenericScreen(html);
 }
+
 function toggleProduct(id){ const p = db.products.find(x=>x.id===id); p.active=!p.active; save(); renderProdutos(); }
+
 function openProductModal(id){
   const p = id ? db.products.find(x=>x.id===id) : null;
   let html = `<h3>${p?'Editar':'Novo'} produto <button class="modal-close" onclick="closeModal()">✕</button></h3>`;
@@ -682,6 +699,7 @@ function openProductModal(id){
   if(p) html += `<div style="height:8px"></div><button class="btn danger" onclick="delProduct(${p.id})">🗑️ Excluir</button>`;
   openModal(html);
 }
+
 function saveProduct(id){
   const name = document.getElementById('pd-name').value.trim();
   const price = +document.getElementById('pd-price').value;
@@ -690,6 +708,7 @@ function saveProduct(id){
   else { db.products.push({ id:nextId(db.products), name, price, active:true }); toast('Produto criado ✅'); }
   save(); closeModal(); renderProdutos();
 }
+
 function delProduct(id){
   if(!confirm('Excluir este produto?')) return;
   db.products = db.products.filter(p=>p.id!==id); save(); renderProdutos();
@@ -711,10 +730,12 @@ function renderVendas(){
   });
   document.getElementById('screen-vendas').innerHTML = html;
 }
+
 function delSale(id){
   if(!confirm('Excluir esta venda?')) return;
   db.sales = db.sales.filter(s=>s.id!==id); save(); render('vendas'); toast('Venda excluída');
 }
+
 function openSaleModal(apptId, presetClient){
   const appt = apptId ? db.appointments.find(a=>a.id===apptId) : null;
   state.saleApptId = apptId || null;
@@ -732,6 +753,7 @@ function openSaleModal(apptId, presetClient){
   openModal(html);
   addSaleItem();
 }
+
 function addSaleItem(){
   const wrap = document.getElementById('sl-items');
   const div = document.createElement('div');
@@ -747,6 +769,7 @@ function addSaleItem(){
   div.querySelector('.si-u').oninput = calcSaleTotal;
   calcSaleTotal();
 }
+
 function calcSaleTotal(){
   const items = document.querySelectorAll('.sale-item');
   let total = 0;
@@ -756,6 +779,7 @@ function calcSaleTotal(){
   });
   const el = document.getElementById('sl-total'); if(el) el.textContent = fmtM(total);
 }
+
 function saveSale(){
   const clientId = +document.getElementById('sl-client').value;
   const date = document.getElementById('sl-date').value;
@@ -772,6 +796,7 @@ function saveSale(){
   db.sales.push({ id:nextId(db.sales), clientId, date, items, total, payment:pay, note, appointmentId:state.saleApptId||null });
   save(); closeModal(); render(state.view); toast('Venda registrada ✅');
 }
+
 function openSaleFromAppt(apptId){
   state.saleApptId = apptId;
   openSaleModal(apptId);
@@ -793,14 +818,16 @@ function renderResultados(){
     <div class="statcard"><div class="v">${r.cancelled}</div><div class="l">Cancelados</div></div>
   </div>`;
   html += '<div class="card"><h3>💳 Formas de pagamento</h3>' + Object.entries(r.payments||{}).map(([p,v])=>'<div class="row"><span>'+esc(p)+'</span><span class="money">'+fmtM(v)+'</span></div>').join('') + '</div>';
-  html += `<div style="height:14px"></div><button class="btn ghost" onclick="go('resultados')">🗓️ Ver relatórios</button>`;
+  html += `<div style="height:14px"></div><button class="btn ghost" onclick="go('relatorios')">🗓️ Ver relatórios</button>`;
   document.getElementById('screen-resultados').innerHTML = html;
 }
+
 function navMonth(n){
   const [y,m] = state.resMonth.split('-').map(Number);
   const d = new Date(y, m-1+n, 1);
   state.resMonth = iso(d).slice(0,7); renderResultados();
 }
+
 function monthStats(key){
   const apps = db.appointments.filter(a=>a.date.slice(0,7)===key);
   const done = apps.filter(a=>a.status==='realizado');
@@ -810,32 +837,17 @@ function monthStats(key){
   const products = sales.reduce((s,x)=>s+x.items.reduce((t,i)=>t+i.qty,0),0);
   const payments = {};
   sales.forEach(x=>{
-  payments[x.payment] = (payments[x.payment] || 0) + x.total;
-});
+    payments[x.payment] = (payments[x.payment] || 0) + x.total;
+  });
   return { clients:new Set(done.map(a=>a.clientId)).size, count:done.length, svcRev, prodRev, total:svcRev+prodRev, ticket:done.length? (svcRev+prodRev)/done.length : 0, products,payments,cancelled:apps.filter(a=>a.status==='cancelado').length };
 }
+
 function periodStats(from,to){
   const apps = db.appointments.filter(a=>a.status==='realizado' && a.date>=from && a.date<=to);
   const sales = db.sales.filter(s=>s.date>=from && s.date<=to);
   const svcRev = apps.reduce((s,a)=>s+a.price,0);
   const prodRev = sales.reduce((s,x)=>s+x.total,0);
   return { clients:new Set(apps.map(a=>a.clientId)).size, count:apps.length, svcRev, prodRev, total:svcRev+prodRev, ticket:apps.length?(svcRev+prodRev)/apps.length:0, products:sales.reduce((s,x)=>s+x.items.reduce((t,i)=>t+i.qty,0),0) };
-}
-function saveSale(){
-  const clientId = +document.getElementById('sl-client').value;
-  const date = document.getElementById('sl-date').value;
-  const pay = document.getElementById('sl-pay').value;
-  const note = document.getElementById('sl-note').value.trim();
-  const items = [];
-  document.querySelectorAll('.sale-item').forEach(d=>{
-    const pid = +d.querySelector('.si-p').value, q = +d.querySelector('.si-q').value, u = +d.querySelector('.si-u').value;
-    if(pid && q>0) items.push({ productId:pid, qty:q, unitPrice:u });
-  });
-  if(!items.length){ toast('Adicione pelo menos um produto'); return; }
-  if(!clientId){ toast('Selecione a cliente'); return; }
-  const total = items.reduce((t,i)=>t+i.qty*i.unitPrice,0);
-  db.sales.push({ id:nextId(db.sales), clientId, date, items, total, payment:pay, note, appointmentId:state.saleApptId||null });
-  save(); closeModal(); render(state.view); toast('Venda registrada ✅');
 }
 
 /* ============ RELATÓRIOS ============ */
@@ -892,20 +904,25 @@ function renderConfig(){
   html += `<div class="card"><div class="muted">Agenda Allan — app pessoal do cabeleireiro. Dados salvos apenas neste dispositivo.</div></div>`;
   openGenericScreen(html);
 }
+
 function saveConfig(){
   db.settings.noReturnDays = +document.getElementById('cf-days').value || 30;
   save(); toast('Configurações salvas');
 }
+
 function exportData(){
   const blob = new Blob([JSON.stringify(db,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = 'agenda-allan-backup.json'; a.click();
   toast('Backup exportado');
 }
+
 function resetData(){
   if(!confirm('Apagar TODOS os dados? Esta ação não pode ser desfeita.')) return;
   db = seed(); save(); state.view='inicio'; go('inicio'); toast('Dados apagados');
 }
+
+/* ============ INICIALIZAÇÃO ============ */
 document.querySelectorAll('#bottomnav button').forEach(b =>
   b.addEventListener('click', () => go(b.dataset.view))
 );
@@ -913,70 +930,20 @@ document.querySelectorAll('#bottomnav button').forEach(b =>
 renderInicio();
 </script>
 
-* ============ TELAS AVULSAS (menu) ============ */
-
-  function openGenericScreen(html) {
-    const scr = document.querySelector("#screen-resultados");
-
-    if (!scr) {
-      console.error("Elemento #screen-resultados não encontrado.");
-      return;
-    }
-
-    const s = document.createElement("section");
-
-    s.className = "screen active";
-    s.id = "screen-generic";
-    s.innerHTML = html;
-
-    document.querySelectorAll(".screen").forEach((x) => {
-      x.classList.remove("active");
-    });
-
-    scr.parentElement.appendChild(s);
-
-    document.querySelectorAll("#bottomnav button").forEach((b) => {
-      b.classList.remove("on");
-    });
-
-    const fab = document.getElementById("fab");
-
-    if (fab) {
-      fab.style.display = "block";
-    }
-  }
-
-  /* ============ INICIALIZAÇÃO ============ */
-
-  if (typeof renderInicio === "function") {
-    renderInicio();
-  }
-
-  document.querySelectorAll("#bottomnav button").forEach((button) => {
-    button.addEventListener("click", () => {
-      if (typeof go === "function") {
-        go(button.dataset.view);
-      }
-    });
-  });
-
-</script>
-
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker
-        .register("./sw.js")        
-        .then(() => {
-          console.log("Service Worker registrado");
-        })
-        .catch((error) => {
-          console.error("Erro no Service Worker:", error);
-        });
+        .register("./sw.js")
+        .then(() => console.log("Service Worker registrado"))
+        .catch((error) => console.error("Erro no Service Worker:", error));
     });
   }
 </script>
 
 </body>
-</html>    
-                                                                                                        
+</html>
+
+ 
+
+
