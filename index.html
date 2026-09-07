@@ -26,6 +26,8 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+    [hidden] { display: none !important; }
+
     body {
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
@@ -188,6 +190,9 @@
         <input type="password" id="loginSenha" placeholder="••••••••" autocomplete="current-password">
         <div class="msg-erro" id="msgLogin"></div>
         <button class="btn" id="btnLogin" style="width:100%; margin-top:12px;">Entrar</button>
+        <p style="text-align:center; margin-top:12px;">
+          <span class="link" id="btnEsqueciSenha">Esqueci minha senha</span>
+        </p>
         <div class="divider">ou</div>
         <button class="btn-outline" id="btnGoogle" style="width:100%;">🔑 Entrar com Google</button>
         <p style="text-align:center; margin-top:18px; color:var(--muted); font-size:14px;">
@@ -484,11 +489,13 @@ const db = firebase.firestore();
     document.getElementById('btnLogin').addEventListener('click', async () => {
       const email = document.getElementById('loginEmail').value.trim();
       const senha = document.getElementById('loginSenha').value;
-      document.getElementById('msgLogin').textContent = '';
+      const msg = document.getElementById('msgLogin');
+      msg.textContent = '';
+      msg.style.color = 'var(--danger)';
       try {
         await auth.signInWithEmailAndPassword(email, senha);
       } catch (e) {
-        document.getElementById('msgLogin').textContent = erroMsg(e);
+        msg.textContent = erroMsg(e);
       }
     });
 
@@ -506,11 +513,32 @@ const db = firebase.firestore();
     });
 
     document.getElementById('btnGoogle').addEventListener('click', async () => {
-      document.getElementById('msgLogin').textContent = '';
+      const msg = document.getElementById('msgLogin');
+      msg.textContent = '';
+      msg.style.color = 'var(--danger)';
       try {
         await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
       } catch (e) {
-        document.getElementById('msgLogin').textContent = erroMsg(e);
+        msg.textContent = erroMsg(e);
+      }
+    });
+
+    document.getElementById('btnEsqueciSenha').addEventListener('click', async () => {
+      const email = document.getElementById('loginEmail').value.trim();
+      const msg = document.getElementById('msgLogin');
+      if (!email) {
+        msg.textContent = 'Digite seu e-mail acima para recuperar a senha.';
+        msg.style.color = 'var(--danger)';
+        return;
+      }
+      msg.textContent = '';
+      try {
+        await auth.sendPasswordResetEmail(email);
+        msg.textContent = '✅ E-mail enviado! Verifique sua caixa de entrada.';
+        msg.style.color = 'var(--success)';
+      } catch (e) {
+        msg.textContent = erroMsg(e);
+        msg.style.color = 'var(--danger)';
       }
     });
 
@@ -528,11 +556,14 @@ const db = firebase.firestore();
     function erroMsg(e) {
       const map = {
         'auth/invalid-email': 'E-mail inválido.',
-        'auth/user-not-found': 'Usuário não encontrado.',
+        'auth/user-not-found': 'Usuário não encontrado. Verifique o e-mail.',
         'auth/wrong-password': 'Senha incorreta.',
+        'auth/invalid-credential': 'E-mail ou senha incorretos.',
+        'auth/invalid-login-credentials': 'E-mail ou senha incorretos.',
         'auth/email-already-in-use': 'Este e-mail já está cadastrado.',
         'auth/weak-password': 'Senha muito fraca (mínimo 6 caracteres).',
-        'auth/popup-closed-by-user': 'Login com Google cancelado.'
+        'auth/popup-closed-by-user': 'Login com Google cancelado.',
+        'auth/too-many-requests': 'Muitas tentativas. Aguarde e tente novamente.'
       };
       return map[e.code] || 'Erro ao processar. Tente novamente.';
     }
@@ -989,9 +1020,3 @@ const db = firebase.firestore();
   </script>
 </body>
 </html>
-
-
-
- 
-
-
