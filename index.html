@@ -228,9 +228,9 @@
       padding-bottom: calc(6px + env(safe-area-inset-bottom));
     }
     nav button {
-      background: transparent; color: var(--muted); font-size: 10px;
+      background: transparent; color: var(--muted); font-size: 9px;
       display: flex; flex-direction: column; align-items: center; gap: 3px;
-      padding: 4px 8px; border-radius: 10px;
+      padding: 4px 4px; border-radius: 10px; flex: 1;
     }
     nav button .nav-ico { font-size: 20px; }
     nav button.ativo { color: var(--gold); }
@@ -262,7 +262,7 @@
   <div id="loginScreen">
     <div class="login-card">
       <div class="logo">
-        <div class="icone"></div>
+        <div class="icone">✂️</div>
         <h1>Agenda Allan</h1>
         <p>Gestão completa do seu salão</p>
       </div>
@@ -358,7 +358,7 @@
             <span>Registrar venda</span>
           </button>
           <button class="acao-btn" id="acaoVerAgenda">
-            <span class="ico">️</span>
+            <span class="ico">📋</span>
             <span>Ver agenda</span>
           </button>
         </div>
@@ -397,7 +397,7 @@
 
       <!-- FINANCEIRO -->
       <section id="secaoFinanceiro" hidden>
-        <h2> Financeiro</h2>
+        <h2>💰 Financeiro</h2>
         <div class="toolbar">
           <select id="filtroMes"></select>
         </div>
@@ -420,6 +420,9 @@
       <!-- RELATÓRIOS -->
       <section id="secaoRelatorios" hidden>
         <h2>📊 Relatórios</h2>
+        <div class="toolbar">
+          <select id="filtroMesRelatorios"></select>
+        </div>
         <div class="rel-grid">
           <div class="rel-card" onclick="abrirRelatorio('profissionais')">
             <div class="ico">👥</div>
@@ -437,7 +440,7 @@
             <div class="sub">Vendas e estoque</div>
           </div>
           <div class="rel-card" onclick="abrirRelatorio('periodo')">
-            <div class="ico"></div>
+            <div class="ico">📅</div>
             <div class="titulo">Por Período</div>
             <div class="sub">Diário / Mensal</div>
           </div>
@@ -447,7 +450,7 @@
 
       <!-- EQUIPE -->
       <section id="secaoEquipe" hidden>
-        <h2> Equipe</h2>
+        <h2>👥 Equipe</h2>
         <div class="toolbar">
           <button class="btn" id="btnAddProfissional" style="width:100%;">+ Profissional</button>
         </div>
@@ -463,7 +466,8 @@
       <button id="navHome" class="ativo"><span class="nav-ico">🏠</span>Início</button>
       <button id="navAgenda"><span class="nav-ico">📅</span>Agenda</button>
       <button id="navClientes"><span class="nav-ico">👤</span>Clientes</button>
-      <button id="navVendas"><span class="nav-ico">💸</span>Vendas</button>
+      <button id="navProdutos"><span class="nav-ico">🛍️</span>Produtos</button>
+      <button id="navEquipe"><span class="nav-ico">👥</span>Equipe</button>
       <button id="navRelatorios"><span class="nav-ico">📊</span>Relatórios</button>
     </nav>
   </div>
@@ -591,6 +595,7 @@
       <button class="btn" id="btnExportar" style="width:100%;">⬇️ Fazer backup</button>
       <button class="btn-outline" id="btnImportar" style="width:100%; margin-top:10px;">📤 Importar dados</button>
       <button class="btn-outline" id="btnTrocarSenha" style="width:100%; margin-top:10px;">🔒 Trocar senha</button>
+      <button class="btn-danger" id="btnSair" style="width:100%; margin-top:10px;">🚪 Sair da conta</button>
       <div class="modal-acoes">
         <button class="btn-outline" id="btnFecharConfig" style="flex:1;">Fechar</button>
       </div>
@@ -701,7 +706,7 @@
       } catch (e) { msg.textContent = erroMsg(e); msg.style.color = 'var(--danger)'; }
     });
 
-    document.getElementById('btnSair')?.addEventListener('click', () => auth.signOut());
+    document.getElementById('btnSair').addEventListener('click', () => auth.signOut());
 
     document.getElementById('btnMostrarCadastro').addEventListener('click', () => {
       document.getElementById('formLogin').hidden = true;
@@ -741,7 +746,8 @@
       home: document.getElementById('navHome'),
       agenda: document.getElementById('navAgenda'),
       clientes: document.getElementById('navClientes'),
-      vendas: document.getElementById('navVendas'),
+      produtos: document.getElementById('navProdutos'),
+      equipe: document.getElementById('navEquipe'),
       relatorios: document.getElementById('navRelatorios')
     };
 
@@ -751,7 +757,10 @@
         navBotoes[k].classList.toggle('ativo', k === secao);
       });
       if (secao === 'home') renderHome();
-      if (secao === 'relatorios') document.getElementById('relatorioDetalhe').innerHTML = '';
+      if (secao === 'relatorios') {
+        document.getElementById('relatorioDetalhe').innerHTML = '';
+        sincronizarFiltroMes();
+      }
     }
 
     Object.keys(navBotoes).forEach(k => {
@@ -856,7 +865,7 @@
             <div class="card-row">
               <div>
                 <div class="card-title">${a.cliente}</div>
-                <div class="card-sub"> ${a.hora || '--'} · ${a.servico || '—'}</div>
+                <div class="card-sub">🕐 ${a.hora || '--'} · ${a.servico || '—'}</div>
               </div>
               <div style="text-align:right;">
                 <span class="badge badge-${a.status}">${a.status}</span>
@@ -1141,25 +1150,40 @@
 
     // ===== FINANCEIRO =====
     function montarFiltroMeses() {
-      const sel = document.getElementById('filtroMes');
       const opcoes = ['todos'];
       const agora = new Date();
       for (let i = 0; i < 12; i++) {
         const d = new Date(agora.getFullYear(), agora.getMonth() - i, 1);
         opcoes.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
       }
-      sel.innerHTML = opcoes.map(m => {
+      const html = opcoes.map(m => {
         if (m === 'todos') return '<option value="todos">Todos os períodos</option>';
         const [a, mm] = m.split('-');
         const nome = new Date(a, mm - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
         return `<option value="${m}">${nome.charAt(0).toUpperCase() + nome.slice(1)}</option>`;
       }).join('');
-      sel.value = state.filtroMes;
+
+      document.getElementById('filtroMes').innerHTML = html;
+      document.getElementById('filtroMesRelatorios').innerHTML = html;
+      document.getElementById('filtroMes').value = state.filtroMes;
+      document.getElementById('filtroMesRelatorios').value = state.filtroMes;
+    }
+
+    function sincronizarFiltroMes() {
+      document.getElementById('filtroMes').value = state.filtroMes;
+      document.getElementById('filtroMesRelatorios').value = state.filtroMes;
     }
 
     document.getElementById('filtroMes').addEventListener('change', e => {
       state.filtroMes = e.target.value;
+      document.getElementById('filtroMesRelatorios').value = state.filtroMes;
       renderFinanceiro();
+    });
+
+    document.getElementById('filtroMesRelatorios').addEventListener('change', e => {
+      state.filtroMes = e.target.value;
+      document.getElementById('filtroMes').value = state.filtroMes;
+      document.getElementById('relatorioDetalhe').innerHTML = '';
     });
 
     function renderFinanceiro() {
@@ -1261,7 +1285,7 @@
               </div>`).join('') : '<div class="empty">Sem vendas no período.</div>'}
           </div>
           <div class="rel-detalhe">
-            <h4> Estoque Baixo</h4>
+            <h4>⚠️ Estoque Baixo</h4>
             ${state.produtos.filter(p => (p.estoque ?? 0) <= 3).length
               ? state.produtos.filter(p => (p.estoque ?? 0) <= 3).map(p => `
                   <div class="rel-linha">
