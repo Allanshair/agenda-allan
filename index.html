@@ -254,6 +254,28 @@
     .checkbox-line { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
     .checkbox-line input { width: auto; }
     .checkbox-line label { margin: 0; color: var(--text); font-size: 14px; }
+
+    /* ===== MODAL HISTÓRICO CLIENTE ===== */
+    .historico-lista { margin-top: 10px; }
+    .historico-item {
+      border-left: 3px solid var(--gold);
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      background: var(--card2);
+      border-radius: 10px;
+    }
+    .historico-item .data { font-size: 12px; color: var(--muted); }
+    .historico-item .servico { font-weight: 700; margin-top: 3px; }
+    .historico-item .valor { color: var(--gold); font-weight: 700; margin-top: 3px; }
+    .historico-stats {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      margin: 14px 0;
+    }
+    .historico-stats .stat {
+      background: var(--card2); border-radius: 10px; padding: 12px; text-align: center;
+    }
+    .historico-stats .stat .num { font-size: 20px; font-weight: 800; color: var(--gold); }
+    .historico-stats .stat .lbl { font-size: 11px; color: var(--muted); margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -497,6 +519,15 @@
         <option value="concluido">Concluído</option>
         <option value="cancelado">Cancelado</option>
       </select>
+      <label>Forma de pagamento</label>
+      <select id="agFormaPagamento">
+        <option value="">— Não definida —</option>
+        <option value="dinheiro">💵 Dinheiro</option>
+        <option value="pix">📱 Pix</option>
+        <option value="credito">💳 Cartão de Crédito</option>
+        <option value="debito">💳 Cartão de Débito</option>
+        <option value="outro">📝 Outro</option>
+      </select>
       <div class="modal-acoes">
         <button class="btn-outline" id="btnFecharAgendamento">Cancelar</button>
         <button class="btn" id="btnSalvarAgendamento">Salvar</button>
@@ -504,7 +535,6 @@
       <button class="btn-danger btn-small" id="btnExcluirAgendamento" style="margin-top:14px; width:100%;" hidden>Excluir</button>
     </div>
   </div>
-
   <!-- ================= MODAL PRODUTO ================= -->
   <div class="modal-overlay" id="modalProduto" hidden>
     <div class="modal">
@@ -533,6 +563,14 @@
       <label>Quantidade</label><input type="number" id="vendaQtd" value="1" min="1">
       <label>Profissional</label>
       <select id="vendaProfissional"><option value="">— Não definido —</option></select>
+      <label>Forma de pagamento</label>
+      <select id="vendaFormaPagamento">
+        <option value="dinheiro">💵 Dinheiro</option>
+        <option value="pix">📱 Pix</option>
+        <option value="credito">💳 Cartão de Crédito</option>
+        <option value="debito">💳 Cartão de Débito</option>
+        <option value="outro">📝 Outro</option>
+      </select>
       <div class="modal-acoes">
         <button class="btn-outline" id="btnFecharVenda">Cancelar</button>
         <button class="btn" id="btnConfirmarVenda">Confirmar</button>
@@ -587,6 +625,49 @@
     </div>
   </div>
 
+  <!-- ================= MODAL FECHAR COMANDA ================= -->
+  <div class="modal-overlay" id="modalFecharComanda" hidden>
+    <div class="modal">
+      <h3>💳 Fechar Comanda</h3>
+      <input type="hidden" id="fecharComandaId">
+      <p class="card-sub" id="fecharComandaInfo" style="margin-bottom:12px;"></p>
+      <label>Forma de pagamento</label>
+      <select id="fecharFormaPagamento">
+        <option value="dinheiro">💵 Dinheiro</option>
+        <option value="pix">📱 Pix</option>
+        <option value="credito">💳 Cartão de Crédito</option>
+        <option value="debito">💳 Cartão de Débito</option>
+        <option value="outro">📝 Outro</option>
+      </select>
+      <div class="modal-acoes">
+        <button class="btn-outline" id="btnFecharComandaCancelar">Cancelar</button>
+        <button class="btn" id="btnFecharComandaConfirmar">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL HISTÓRICO CLIENTE ================= -->
+  <div class="modal-overlay" id="modalHistoricoCliente" hidden>
+    <div class="modal">
+      <h3 id="tituloHistoricoCliente">📋 Histórico da Cliente</h3>
+      <div class="historico-stats">
+        <div class="stat">
+          <div class="num" id="histTotalVisitas">0</div>
+          <div class="lbl">Atendimentos</div>
+        </div>
+        <div class="stat">
+          <div class="num" id="histTicketMedio">R$ 0</div>
+          <div class="lbl">Ticket médio</div>
+        </div>
+      </div>
+      <h4 style="color:var(--gold); font-size:14px; margin-bottom:8px;">Serviços realizados</h4>
+      <div class="historico-lista" id="histListaServicos"></div>
+      <div class="modal-acoes">
+        <button class="btn-outline" id="btnFecharHistorico" style="flex:1;">Fechar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= MODAL CONFIG ================= -->
   <div class="modal-overlay" id="modalConfig" hidden>
     <div class="modal">
@@ -636,6 +717,17 @@
     function hoje() { return new Date().toISOString().split('T')[0]; }
     function mesDe(iso) { return iso ? iso.slice(0, 7) : ''; }
     function inicial(nome) { return nome ? nome.charAt(0).toUpperCase() : '?'; }
+
+    function labelFormaPagamento(fp) {
+      const map = {
+        dinheiro: 'Dinheiro',
+        pix: 'Pix',
+        credito: 'Cartão de Crédito',
+        debito: 'Cartão de Débito',
+        outro: 'Outro'
+      };
+      return map[fp] || '—';
+    }
 
     function saudacao() {
       const h = new Date().getHours();
@@ -880,7 +972,6 @@
       const [a, m, d] = iso.split('-');
       return `${d}/${m}/${a}`;
     }
-
     // ===== AGENDA =====
     function renderAgenda() {
       const lista = document.getElementById('listaAgendamentos');
@@ -894,6 +985,8 @@
       }
       lista.innerHTML = itens.map(a => {
         const prof = state.profissionais.find(p => p.id === a.profissionalId);
+        const pagamento = a.status === 'concluido' && a.formaPagamento
+          ? `<div class="card-sub" style="margin-top:4px;">💳 ${labelFormaPagamento(a.formaPagamento)}</div>` : '';
         return `
           <div class="card">
             <div class="card-row">
@@ -901,6 +994,7 @@
                 <div class="card-title">${a.cliente || 'Cliente'}</div>
                 <div class="card-sub">🕐 ${a.hora || '--'} · ${a.servico || '—'}</div>
                 <div class="card-sub">${prof ? '👤 ' + prof.nome : ''}</div>
+                ${pagamento}
               </div>
               <div style="text-align:right;">
                 <span class="badge badge-${a.status}">${a.status}</span>
@@ -928,6 +1022,7 @@
       document.getElementById('agValor').value = dados.valor ?? '';
       document.getElementById('agStatus').value = dados.status || 'agendado';
       document.getElementById('agProfissional').value = dados.profissionalId || '';
+      document.getElementById('agFormaPagamento').value = dados.formaPagamento || '';
       document.getElementById('btnExcluirAgendamento').hidden = !dados.id;
       popularSelectProfissionais();
       popularDatalistClientes();
@@ -939,8 +1034,16 @@
       if (a) abrirModalAgendamento(a);
     }
 
-    async function concluirAgendamento(id) {
-      await db.collection('users').doc(state.usuario.uid).collection('agendamentos').doc(id).update({ status: 'concluido' });
+    function concluirAgendamento(id) {
+      const a = state.agendamentos.find(x => x.id === id);
+      if (!a) return;
+      document.getElementById('fecharComandaId').value = id;
+      document.getElementById('fecharComandaInfo').innerHTML = `
+        <strong>${a.cliente}</strong><br>
+        ${a.servico || '—'} · ${formatarMoeda(a.valor)}
+      `;
+      document.getElementById('fecharFormaPagamento').value = a.formaPagamento || 'dinheiro';
+      document.getElementById('modalFecharComanda').hidden = false;
     }
 
     document.getElementById('btnSalvarAgendamento').addEventListener('click', async () => {
@@ -952,7 +1055,8 @@
         servico: document.getElementById('agServico').value.trim(),
         valor: Number(document.getElementById('agValor').value) || 0,
         status: document.getElementById('agStatus').value,
-        profissionalId: document.getElementById('agProfissional').value || ''
+        profissionalId: document.getElementById('agProfissional').value || '',
+        formaPagamento: document.getElementById('agFormaPagamento').value || ''
       };
       if (!dados.data || !dados.cliente) { alert('Preencha data e cliente.'); return; }
       const base = db.collection('users').doc(state.usuario.uid).collection('agendamentos');
@@ -972,6 +1076,21 @@
       document.getElementById('modalAgendamento').hidden = true;
     });
 
+    document.getElementById('btnFecharComandaConfirmar').addEventListener('click', async () => {
+      const id = document.getElementById('fecharComandaId').value;
+      const fp = document.getElementById('fecharFormaPagamento').value;
+      if (!id) return;
+      await db.collection('users').doc(state.usuario.uid).collection('agendamentos').doc(id).update({
+        status: 'concluido',
+        formaPagamento: fp
+      });
+      document.getElementById('modalFecharComanda').hidden = true;
+    });
+
+    document.getElementById('btnFecharComandaCancelar').addEventListener('click', () => {
+      document.getElementById('modalFecharComanda').hidden = true;
+    });
+
     // ===== CLIENTES =====
     function renderClientes() {
       const lista = document.getElementById('listaClientes');
@@ -987,7 +1106,10 @@
               <div class="card-sub">${c.telefone || 'Sem telefone'} ${c.email ? '· ' + c.email : ''}</div>
               ${c.obs ? `<div class="card-sub" style="margin-top:4px;">📝 ${c.obs}</div>` : ''}
             </div>
-            <button class="btn-outline btn-small" onclick="editarCliente('${c.id}')">Editar</button>
+            <div style="display:flex; gap:6px; flex-direction:column; align-items:flex-end;">
+              <button class="btn-outline btn-small" onclick="editarCliente('${c.id}')">Editar</button>
+              <button class="btn btn-small" onclick="abrirHistoricoCliente('${c.id}')">📋 Histórico</button>
+            </div>
           </div>
         </div>`).join('');
     }
@@ -1008,6 +1130,32 @@
     function editarCliente(id) {
       const c = state.clientes.find(x => x.id === id);
       if (c) abrirModalCliente(c);
+    }
+
+    function abrirHistoricoCliente(id) {
+      const c = state.clientes.find(x => x.id === id);
+      if (!c) return;
+      document.getElementById('tituloHistoricoCliente').textContent = `📋 Histórico de ${c.nome}`;
+      const atendimentos = state.agendamentos
+        .filter(a => a.cliente === c.nome && a.status === 'concluido')
+        .sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+      const totalVisitas = atendimentos.length;
+      const totalGasto = atendimentos.reduce((s, a) => s + (Number(a.valor) || 0), 0);
+      const ticketMedio = totalVisitas > 0 ? totalGasto / totalVisitas : 0;
+      document.getElementById('histTotalVisitas').textContent = totalVisitas;
+      document.getElementById('histTicketMedio').textContent = formatarMoeda(ticketMedio);
+      const lista = document.getElementById('histListaServicos');
+      if (!atendimentos.length) {
+        lista.innerHTML = '<div class="empty">Nenhum atendimento concluído ainda.</div>';
+      } else {
+        lista.innerHTML = atendimentos.map(a => `
+          <div class="historico-item">
+            <div class="data">${formatarData(a.data)} às ${a.hora || '--'}</div>
+            <div class="servico">${a.servico || '—'}</div>
+            <div class="valor">${formatarMoeda(a.valor)} ${a.formaPagamento ? '· ' + labelFormaPagamento(a.formaPagamento) : ''}</div>
+          </div>`).join('');
+      }
+      document.getElementById('modalHistoricoCliente').hidden = false;
     }
 
     document.getElementById('btnSalvarCliente').addEventListener('click', async () => {
@@ -1034,6 +1182,10 @@
     });
     document.getElementById('btnFecharCliente').addEventListener('click', () => {
       document.getElementById('modalCliente').hidden = true;
+    });
+
+    document.getElementById('btnFecharHistorico').addEventListener('click', () => {
+      document.getElementById('modalHistoricoCliente').hidden = true;
     });
 
     function popularDatalistClientes() {
@@ -1123,6 +1275,7 @@
       document.getElementById('vendaProdutoInfo').textContent = `${p.nome} — ${formatarMoeda(p.venda)} · Estoque: ${p.estoque ?? 0}`;
       document.getElementById('vendaQtd').value = 1;
       document.getElementById('vendaProfissional').value = '';
+      document.getElementById('vendaFormaPagamento').value = 'dinheiro';
       popularSelectProfissionais();
       document.getElementById('modalVenda').hidden = false;
     }
@@ -1138,6 +1291,7 @@
         produtoId, produtoNome: p.nome, quantidade: qtd,
         valorUnitario: p.venda, valorTotal: p.venda * qtd,
         profissionalId: document.getElementById('vendaProfissional').value || '',
+        formaPagamento: document.getElementById('vendaFormaPagamento').value || 'dinheiro',
         data: hoje()
       });
       await base.collection('produtos').doc(produtoId).update({ estoque: (p.estoque ?? 0) - qtd });
