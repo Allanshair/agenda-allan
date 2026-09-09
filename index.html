@@ -276,6 +276,37 @@
     }
     .historico-stats .stat .num { font-size: 20px; font-weight: 800; color: var(--gold); }
     .historico-stats .stat .lbl { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ===== COMANDA / PRODUTOS ===== */
+    .comanda-box {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin: 14px 0;
+    }
+    .comanda-box h4 {
+      color: var(--gold);
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .comanda-produto {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .comanda-produto:last-child { border-bottom: none; }
+    .comanda-total {
+      text-align: right;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--gold);
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
   </style>
 </head>
 <body>
@@ -557,9 +588,11 @@
   <!-- ================= MODAL VENDA ================= -->
   <div class="modal-overlay" id="modalVenda" hidden>
     <div class="modal">
-      <h3>Registrar Venda</h3>
+      <h3>Registrar Venda Avulsa</h3>
       <input type="hidden" id="vendaProdutoId">
       <p class="card-sub" id="vendaProdutoInfo" style="margin-bottom:8px;"></p>
+      <label>Cliente</label>
+      <input type="text" id="vendaCliente" placeholder="Nome do cliente" list="listaClientesDatalist">
       <label>Quantidade</label><input type="number" id="vendaQtd" value="1" min="1">
       <label>Profissional</label>
       <select id="vendaProfissional"><option value="">— Não definido —</option></select>
@@ -631,6 +664,7 @@
       <h3>💳 Fechar Comanda</h3>
       <input type="hidden" id="fecharComandaId">
       <p class="card-sub" id="fecharComandaInfo" style="margin-bottom:12px;"></p>
+
       <label>Forma de pagamento</label>
       <select id="fecharFormaPagamento">
         <option value="dinheiro">💵 Dinheiro</option>
@@ -639,6 +673,27 @@
         <option value="debito">💳 Cartão de Débito</option>
         <option value="outro">📝 Outro</option>
       </select>
+
+      <div class="comanda-box">
+        <h4>🛍️ Produtos da comanda</h4>
+        <div id="comandaProdutosLista"></div>
+        <div class="comanda-total" id="comandaTotal">Total produtos: R$ 0,00</div>
+      </div>
+
+      <div class="row-2">
+        <div>
+          <label>Adicionar produto</label>
+          <select id="comandaProdutoSelect"><option value="">— Selecione —</option></select>
+        </div>
+        <div>
+          <label>Qtd</label>
+          <input type="number" id="comandaProdutoQtd" value="1" min="1">
+        </div>
+      </div>
+      <button class="btn btn-small" id="btnAdicionarProdutoComanda" style="width:100%; margin-top:10px;">+ Adicionar à comanda</button>
+
+      <div class="comanda-total" id="comandaTotalGeral" style="font-size:22px; margin-top:16px;">Total: R$ 0,00</div>
+
       <div class="modal-acoes">
         <button class="btn-outline" id="btnFecharComandaCancelar">Cancelar</button>
         <button class="btn" id="btnFecharComandaConfirmar">Confirmar</button>
@@ -708,7 +763,8 @@
       vendas: [],
       profissionais: [],
       clientes: [],
-      filtroMes: 'todos'
+      filtroMes: 'todos',
+      comandaAtual: []
     };
 
     function formatarMoeda(v) {
@@ -883,7 +939,7 @@
       });
       const l2 = base.collection('produtos').orderBy('nome').onSnapshot(snap => {
         state.produtos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderProdutos();
+        renderProdutos(); popularSelectProdutosComanda();
       });
       const l3 = base.collection('vendas').orderBy('data', 'desc').onSnapshot(snap => {
         state.vendas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -1037,12 +1093,15 @@
     function concluirAgendamento(id) {
       const a = state.agendamentos.find(x => x.id === id);
       if (!a) return;
+      state.comandaAtual = [];
       document.getElementById('fecharComandaId').value = id;
       document.getElementById('fecharComandaInfo').innerHTML = `
         <strong>${a.cliente}</strong><br>
         ${a.servico || '—'} · ${formatarMoeda(a.valor)}
       `;
       document.getElementById('fecharFormaPagamento').value = a.formaPagamento || 'dinheiro';
+      popularSelectProdutosComanda();
+      renderComanda();
       document.getElementById('modalFecharComanda').hidden = false;
     }
 
@@ -1076,18 +1135,107 @@
       document.getElementById('modalAgendamento').hidden = true;
     });
 
+    // ===== COMANDA / PRODUTOS DO AGENDAMENTO =====
+    function popularSelectProdutosComanda() {
+      const sel = document.getElementById('comandaProdutoSelect');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">— Selecione —</option>' +
+        state.produtos.map(p => `<option value="${p.id}">${p.nome} — ${formatarMoeda(p.venda)} · Estoque: ${p.estoque ?? 0}</option>`).join('');
+    }
+
+    function renderComanda() {
+      const container = document.getElementById('comandaProdutosLista');
+      const a = state.agendamentos.find(x => x.id === document.getElementById('fecharComandaId').value);
+      const valorServico = a ? Number(a.valor) || 0 : 0;
+
+      if (!state.comandaAtual.length) {
+        container.innerHTML = '<div class="empty" style="padding:14px 0;">Nenhum produto adicionado.</div>';
+      } else {
+        container.innerHTML = state.comandaAtual.map((item, idx) => `
+          <div class="comanda-produto">
+            <div>
+              <div class="card-title">${item.produtoNome}</div>
+              <div class="card-sub">${item.quantidade}x · ${formatarMoeda(item.valorUnitario)}</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="card-title" style="color:var(--gold);">${formatarMoeda(item.valorTotal)}</div>
+              <button class="btn-danger btn-small" onclick="removerProdutoComanda(${idx})" style="margin-top:4px;">Remover</button>
+            </div>
+          </div>`).join('');
+      }
+
+      const totalProdutos = state.comandaAtual.reduce((s, i) => s + Number(i.valorTotal), 0);
+      document.getElementById('comandaTotal').textContent = 'Total produtos: ' + formatarMoeda(totalProdutos);
+      document.getElementById('comandaTotalGeral').textContent = 'Total: ' + formatarMoeda(valorServico + totalProdutos);
+    }
+
+    function adicionarProdutoComanda() {
+      const produtoId = document.getElementById('comandaProdutoSelect').value;
+      const qtd = Math.max(1, Number(document.getElementById('comandaProdutoQtd').value) || 1);
+      if (!produtoId) { alert('Selecione um produto.'); return; }
+      const p = state.produtos.find(x => x.id === produtoId);
+      if (!p) return;
+      const jaNaComanda = state.comandaAtual.reduce((s, i) => s + (i.produtoId === produtoId ? i.quantidade : 0), 0);
+      if ((p.estoque ?? 0) < jaNaComanda + qtd) { alert('Estoque insuficiente.'); return; }
+      state.comandaAtual.push({
+        produtoId: p.id,
+        produtoNome: p.nome,
+        quantidade: qtd,
+        valorUnitario: p.venda,
+        valorTotal: p.venda * qtd
+      });
+      document.getElementById('comandaProdutoQtd').value = 1;
+      document.getElementById('comandaProdutoSelect').value = '';
+      renderComanda();
+    }
+
+    function removerProdutoComanda(idx) {
+      state.comandaAtual.splice(idx, 1);
+      renderComanda();
+    }
+
+    document.getElementById('btnAdicionarProdutoComanda').addEventListener('click', adicionarProdutoComanda);
+
     document.getElementById('btnFecharComandaConfirmar').addEventListener('click', async () => {
       const id = document.getElementById('fecharComandaId').value;
       const fp = document.getElementById('fecharFormaPagamento').value;
       if (!id) return;
-      await db.collection('users').doc(state.usuario.uid).collection('agendamentos').doc(id).update({
+
+      const a = state.agendamentos.find(x => x.id === id);
+      const base = db.collection('users').doc(state.usuario.uid);
+
+      // Atualiza agendamento
+      await base.collection('agendamentos').doc(id).update({
         status: 'concluido',
         formaPagamento: fp
       });
+
+      // Grava produtos da comanda como vendas vinculadas ao cliente/profissional do agendamento
+      for (const item of state.comandaAtual) {
+        await base.collection('vendas').add({
+          ...item,
+          cliente: a?.cliente || '',
+          profissionalId: a?.profissionalId || '',
+          formaPagamento: fp,
+          data: hoje(),
+          origem: 'comanda'
+        });
+      }
+
+      // Baixa estoque
+      for (const item of state.comandaAtual) {
+        const p = state.produtos.find(x => x.id === item.produtoId);
+        if (p) await base.collection('produtos').doc(item.produtoId).update({
+          estoque: Math.max(0, (p.estoque ?? 0) - item.quantidade)
+        });
+      }
+
+      state.comandaAtual = [];
       document.getElementById('modalFecharComanda').hidden = true;
     });
 
     document.getElementById('btnFecharComandaCancelar').addEventListener('click', () => {
+      state.comandaAtual = [];
       document.getElementById('modalFecharComanda').hidden = true;
     });
 
@@ -1267,16 +1415,18 @@
       document.getElementById('modalProduto').hidden = true;
     });
 
-    // ===== VENDAS =====
+    // ===== VENDAS AVULSAS =====
     function abrirVenda(produtoId) {
       const p = state.produtos.find(x => x.id === produtoId);
       if (!p) return;
       document.getElementById('vendaProdutoId').value = p.id;
       document.getElementById('vendaProdutoInfo').textContent = `${p.nome} — ${formatarMoeda(p.venda)} · Estoque: ${p.estoque ?? 0}`;
+      document.getElementById('vendaCliente').value = '';
       document.getElementById('vendaQtd').value = 1;
       document.getElementById('vendaProfissional').value = '';
       document.getElementById('vendaFormaPagamento').value = 'dinheiro';
       popularSelectProfissionais();
+      popularDatalistClientes();
       document.getElementById('modalVenda').hidden = false;
     }
 
@@ -1286,13 +1436,19 @@
       if (!p) return;
       const qtd = Math.max(1, Number(document.getElementById('vendaQtd').value) || 1);
       if ((p.estoque ?? 0) < qtd) { alert('Estoque insuficiente.'); return; }
+
       const base = db.collection('users').doc(state.usuario.uid);
       await base.collection('vendas').add({
-        produtoId, produtoNome: p.nome, quantidade: qtd,
-        valorUnitario: p.venda, valorTotal: p.venda * qtd,
+        produtoId,
+        produtoNome: p.nome,
+        quantidade: qtd,
+        valorUnitario: p.venda,
+        valorTotal: p.venda * qtd,
+        cliente: document.getElementById('vendaCliente').value.trim(),
         profissionalId: document.getElementById('vendaProfissional').value || '',
         formaPagamento: document.getElementById('vendaFormaPagamento').value || 'dinheiro',
-        data: hoje()
+        data: hoje(),
+        origem: 'avulsa'
       });
       await base.collection('produtos').doc(produtoId).update({ estoque: (p.estoque ?? 0) - qtd });
       document.getElementById('modalVenda').hidden = true;
@@ -1382,6 +1538,8 @@
             if (!dados[pid]) dados[pid] = { nome: 'Não definido', total: 0, qtd: 0, comissao: 0 };
             const prof = state.profissionais.find(p => p.id === pid);
             if (prof && !prof.isDono) dados[pid].comissao += (v.valorTotal || 0) * (prof.comissaoProduto || 0) / 100;
+            dados[pid].total += Number(v.valorTotal) || 0;
+            dados[pid].qtd += v.quantidade || 1;
           });
         const linhas = Object.values(dados).sort((a, b) => b.total - a.total);
         div.innerHTML = `
@@ -1389,7 +1547,7 @@
             <h4>👥 Relatório por Profissional</h4>
             ${linhas.length ? linhas.map(l => `
               <div class="rel-linha">
-                <span class="nome">${l.nome}<br><small style="color:var(--muted);">${l.qtd} atend. · Comissão: ${formatarMoeda(l.comissao)}</small></span>
+                <span class="nome">${l.nome}<br><small style="color:var(--muted);">${l.qtd} itens · Comissão: ${formatarMoeda(l.comissao)}</small></span>
                 <span class="valor">${formatarMoeda(l.total)}</span>
               </div>`).join('') : '<div class="empty">Sem dados.</div>'}
           </div>`;
