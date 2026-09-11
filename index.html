@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Agenda Allan</title>
+  <title id="appTitle">ALLYAN Tech — AGENDA</title>
   <meta name="theme-color" content="#0a0a0a">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192.png">
@@ -183,6 +183,14 @@
     .badge-concluido { background: rgba(48,164,108,.15); color: var(--success); }
     .badge-cancelado { background: rgba(229,72,77,.15); color: var(--danger); }
 
+    /* ===== SERVIÇOS ===== */
+    .servico-preco {
+      color: var(--gold); font-weight: 700; font-size: 16px;
+    }
+    .servico-duracao {
+      color: var(--muted); font-size: 12px;
+    }
+
     /* ===== FINANCEIRO ===== */
     .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
     .fin-card {
@@ -307,6 +315,27 @@
       padding-top: 10px;
       border-top: 1px solid var(--border);
     }
+
+    /* ===== ITENS DE SERVIÇO NO AGENDAMENTO ===== */
+    .servico-item {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .servico-item-cabecalho {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .servico-item-cabecalho strong {
+      color: var(--gold);
+    }
+    .servico-lista {
+      margin: 12px 0;
+    }
   </style>
 </head>
 <body>
@@ -316,8 +345,8 @@
     <div class="login-card">
       <div class="logo">
         <div class="icone">✂️</div>
-        <h1>Agenda Allan</h1>
-        <p>Gestão completa do seu salão</p>
+        <h1 id="loginTitulo">AGENDA</h1>
+        <p id="loginSubtitulo">Gestão completa do seu salão</p>
       </div>
       <div id="formLogin">
         <label>E-mail</label>
@@ -356,8 +385,8 @@
     <header>
       <div class="topo">
         <div class="titulo">
-          <h1>AGENDA ALLAN</h1>
-          <p>Beleza Capilar · Gestão</p>
+          <h1 id="headerTitulo">AGENDA</h1>
+          <p id="headerSubtitulo">Gestão completa do seu salão</p>
         </div>
         <div class="acoes-topo">
           <button class="btn-icon" id="btnConfig">⚙️</button>
@@ -369,7 +398,7 @@
       <!-- HOME / DASHBOARD -->
       <section id="secaoHome">
         <div class="saudacao">
-          <h2 id="saudacaoTexto">Boa noite, Allan! 👋</h2>
+          <h2 id="saudacaoTexto">Boa noite! 👋</h2>
           <div class="data" id="saudacaoData">sexta-feira, 28 de agosto</div>
         </div>
 
@@ -419,7 +448,6 @@
         <div class="secao-titulo">Agenda do dia</div>
         <div id="listaHomeAgenda"></div>
       </section>
-
       <!-- AGENDA -->
       <section id="secaoAgenda" hidden>
         <h2>📅 Agenda</h2>
@@ -437,6 +465,15 @@
           <button class="btn" id="btnAddCliente" style="width:100%;">+ Nova Cliente</button>
         </div>
         <div id="listaClientes"></div>
+      </section>
+
+      <!-- SERVIÇOS -->
+      <section id="secaoServicos" hidden>
+        <h2>✂️ Serviços</h2>
+        <div class="toolbar">
+          <button class="btn" id="btnAddServico" style="width:100%;">+ Novo Serviço</button>
+        </div>
+        <div id="listaServicos"></div>
       </section>
 
       <!-- PRODUTOS -->
@@ -519,6 +556,7 @@
       <button id="navHome" class="ativo"><span class="nav-ico">🏠</span>Início</button>
       <button id="navAgenda"><span class="nav-ico">📅</span>Agenda</button>
       <button id="navClientes"><span class="nav-ico">👤</span>Clientes</button>
+      <button id="navServicos"><span class="nav-ico">✂️</span>Serviços</button>
       <button id="navProdutos"><span class="nav-ico">🛍️</span>Produtos</button>
       <button id="navEquipe"><span class="nav-ico">👥</span>Equipe</button>
       <button id="navRelatorios"><span class="nav-ico">📊</span>Relatórios</button>
@@ -537,12 +575,24 @@
       <label>Cliente</label>
       <input type="text" id="agCliente" placeholder="Nome do cliente" list="listaClientesDatalist">
       <datalist id="listaClientesDatalist"></datalist>
-      <label>Serviço</label>
-      <input type="text" id="agServico" placeholder="Ex: Corte, Coloração...">
-      <label>Valor (R$)</label>
-      <input type="number" id="agValor" placeholder="0,00" step="0.01" min="0">
-      <label>Profissional</label>
-      <select id="agProfissional"><option value="">— Não definido —</option></select>
+
+      <h4 style="color:var(--gold); margin:18px 0 8px; font-size:15px;">Serviços do agendamento</h4>
+      <div id="agServicosLista" class="servico-lista"></div>
+
+      <div class="row-2">
+        <div>
+          <label>Serviço</label>
+          <select id="agServicoSelect"><option value="">— Selecione —</option></select>
+        </div>
+        <div>
+          <label>Profissional</label>
+          <select id="agServicoProfissional"><option value="">— Não definido —</option></select>
+        </div>
+      </div>
+      <button class="btn btn-small" id="btnAdicionarServicoAgend" style="width:100%; margin-top:10px;">+ Adicionar serviço</button>
+
+      <div class="comanda-total" id="agTotalServicos" style="font-size:20px; margin-top:14px;">Total: R$ 0,00</div>
+
       <label>Status</label>
       <select id="agStatus">
         <option value="agendado">Agendado</option>
@@ -566,6 +616,25 @@
       <button class="btn-danger btn-small" id="btnExcluirAgendamento" style="margin-top:14px; width:100%;" hidden>Excluir</button>
     </div>
   </div>
+
+  <!-- ================= MODAL SERVIÇO ================= -->
+  <div class="modal-overlay" id="modalServico" hidden>
+    <div class="modal">
+      <h3 id="tituloServico">Novo Serviço</h3>
+      <input type="hidden" id="servicoId">
+      <label>Nome</label><input type="text" id="servicoNome" placeholder="Ex: Corte feminino">
+      <div class="row-2">
+        <div><label>Valor padrão (R$)</label><input type="number" id="servicoValor" step="0.01" min="0"></div>
+        <div><label>Duração padrão (min)</label><input type="number" id="servicoDuracao" min="0" step="5" placeholder="Ex: 60"></div>
+      </div>
+      <div class="modal-acoes">
+        <button class="btn-outline" id="btnFecharServico">Cancelar</button>
+        <button class="btn" id="btnSalvarServico">Salvar</button>
+      </div>
+      <button class="btn-danger btn-small" id="btnExcluirServico" style="margin-top:14px; width:100%;" hidden>Excluir</button>
+    </div>
+  </div>
+
   <!-- ================= MODAL PRODUTO ================= -->
   <div class="modal-overlay" id="modalProduto" hidden>
     <div class="modal">
@@ -665,6 +734,12 @@
       <input type="hidden" id="fecharComandaId">
       <p class="card-sub" id="fecharComandaInfo" style="margin-bottom:12px;"></p>
 
+      <div class="comanda-box">
+        <h4>✂️ Serviços</h4>
+        <div id="comandaServicosLista"></div>
+        <div class="comanda-total" id="comandaTotalServicos">Serviços: R$ 0,00</div>
+      </div>
+
       <label>Forma de pagamento</label>
       <select id="fecharFormaPagamento">
         <option value="dinheiro">💵 Dinheiro</option>
@@ -677,7 +752,7 @@
       <div class="comanda-box">
         <h4>🛍️ Produtos da comanda</h4>
         <div id="comandaProdutosLista"></div>
-        <div class="comanda-total" id="comandaTotal">Total produtos: R$ 0,00</div>
+        <div class="comanda-total" id="comandaTotalProdutos">Produtos: R$ 0,00</div>
       </div>
 
       <div class="row-2">
@@ -727,7 +802,18 @@
   <div class="modal-overlay" id="modalConfig" hidden>
     <div class="modal">
       <h3>⚙️ Configurações</h3>
-      <p class="card-sub" style="margin-bottom:16px;">Backup e restauração dos seus dados.</p>
+      <p class="card-sub" style="margin-bottom:16px;">Dados do estabelecimento, backup e restauração.</p>
+
+      <label>Nome do estabelecimento</label>
+      <input type="text" id="configEstabelecimento" placeholder="Ex: Salão da Maria">
+
+      <label>Ramo / Slogan</label>
+      <input type="text" id="configSlogan" placeholder="Ex: Beleza Capilar · Gestão">
+
+      <button class="btn" id="btnSalvarConfig" style="width:100%; margin-top:12px;">💾 Salvar configurações</button>
+
+      <div style="height:1px; background:var(--border); margin:18px 0;"></div>
+
       <button class="btn" id="btnExportar" style="width:100%;">⬇️ Fazer backup</button>
       <button class="btn-outline" id="btnImportar" style="width:100%; margin-top:10px;">📤 Importar dados</button>
       <button class="btn-outline" id="btnTrocarSenha" style="width:100%; margin-top:10px;">🔒 Trocar senha</button>
@@ -756,6 +842,13 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    const MARCA = {
+      empresa: 'ALLYAN Tech',
+      app: 'AGENDA',
+      nomeCompleto: 'ALLYAN Tech — AGENDA',
+      slogan: 'Gestão completa do seu salão'
+    };
+
     const state = {
       usuario: null,
       agendamentos: [],
@@ -763,8 +856,10 @@
       vendas: [],
       profissionais: [],
       clientes: [],
+      servicos: [],
       filtroMes: 'todos',
-      comandaAtual: []
+      comandaAtual: [],
+      agServicosTemp: []
     };
 
     function formatarMoeda(v) {
@@ -795,16 +890,49 @@
       return new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
     }
 
+    function aplicarMarca() {
+      document.title = MARCA.nomeCompleto;
+      const t = document.getElementById('appTitle');
+      if (t) t.textContent = MARCA.nomeCompleto;
+      const lt = document.getElementById('loginTitulo');
+      if (lt) lt.textContent = MARCA.app;
+      const ls = document.getElementById('loginSubtitulo');
+      if (ls) ls.textContent = MARCA.slogan;
+      const ht = document.getElementById('headerTitulo');
+      if (ht) ht.textContent = MARCA.app;
+      const hs = document.getElementById('headerSubtitulo');
+      if (hs) hs.textContent = MARCA.slogan;
+    }
+
+    async function carregarConfigEstabelecimento() {
+      const doc = await db.collection('users').doc(state.usuario.uid).collection('config').doc('estabelecimento').get();
+      if (doc.exists) {
+        const cfg = doc.data();
+        document.getElementById('configEstabelecimento').value = cfg.nome || '';
+        document.getElementById('configSlogan').value = cfg.slogan || '';
+        if (cfg.nome) {
+          document.getElementById('saudacaoTexto').textContent = `${saudacao()}, ${cfg.nome}! 👋`;
+        }
+        if (cfg.slogan) {
+          document.getElementById('headerSubtitulo').textContent = cfg.slogan;
+        }
+        return cfg;
+      }
+      return null;
+    }
+
     // ===== AUTH =====
     const loginScreen = document.getElementById('loginScreen');
     const appScreen = document.getElementById('appScreen');
 
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(async user => {
+      aplicarMarca();
       if (user) {
         state.usuario = user;
         loginScreen.hidden = true;
         appScreen.hidden = false;
-        const nome = user.displayName || user.email.split('@')[0];
+        const cfg = await carregarConfigEstabelecimento();
+        const nome = cfg?.nome || user.displayName || user.email.split('@')[0];
         document.getElementById('saudacaoTexto').textContent = `${saudacao()}, ${nome}! 👋`;
         document.getElementById('saudacaoData').textContent = dataExtenso();
         iniciarApp(user.uid);
@@ -885,6 +1013,7 @@
       home: document.getElementById('secaoHome'),
       agenda: document.getElementById('secaoAgenda'),
       clientes: document.getElementById('secaoClientes'),
+      servicos: document.getElementById('secaoServicos'),
       produtos: document.getElementById('secaoProdutos'),
       financeiro: document.getElementById('secaoFinanceiro'),
       relatorios: document.getElementById('secaoRelatorios'),
@@ -894,6 +1023,7 @@
       home: document.getElementById('navHome'),
       agenda: document.getElementById('navAgenda'),
       clientes: document.getElementById('navClientes'),
+      servicos: document.getElementById('navServicos'),
       produtos: document.getElementById('navProdutos'),
       equipe: document.getElementById('navEquipe'),
       relatorios: document.getElementById('navRelatorios')
@@ -905,6 +1035,7 @@
         navBotoes[k].classList.toggle('ativo', k === secao);
       });
       if (secao === 'home') renderHome();
+      if (secao === 'servicos') renderServicos();
       if (secao === 'relatorios') {
         document.getElementById('relatorioDetalhe').innerHTML = '';
         sincronizarFiltroMes();
@@ -915,7 +1046,6 @@
       navBotoes[k].addEventListener('click', () => navegar(k));
     });
 
-    // Ações rápidas da home
     document.getElementById('acaoNovoAgend').addEventListener('click', () => { navegar('agenda'); setTimeout(() => abrirModalAgendamento(), 100); });
     document.getElementById('acaoNovoCliente').addEventListener('click', () => { navegar('clientes'); setTimeout(() => abrirModalCliente(), 100); });
     document.getElementById('acaoVenda').addEventListener('click', () => navegar('produtos'));
@@ -953,8 +1083,12 @@
         state.clientes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderClientes(); popularDatalistClientes();
       });
+      const l6 = base.collection('servicos').orderBy('nome').onSnapshot(snap => {
+        state.servicos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderServicos(); popularSelectServicos();
+      });
 
-      listenersAtivos = [l1, l2, l3, l4, l5];
+      listenersAtivos = [l1, l2, l3, l4, l5, l6];
     }
 
     function limparListeners() {
@@ -978,29 +1112,62 @@
       }
     }
 
+    // ===== HELPERS PARA SERVIÇOS DOS AGENDAMENTOS =====
+    function normalizarServicos(ag) {
+      // compatibilidade com agendamentos antigos
+      if (ag.servicos && Array.isArray(ag.servicos) && ag.servicos.length) return ag.servicos;
+      if (ag.servico) {
+        return [{
+          servicoId: ag.servicoId || '',
+          nome: ag.servico,
+          valor: Number(ag.valor) || 0,
+          profissionalId: ag.profissionalId || '',
+          duracao: Number(ag.duracao) || 0
+        }];
+      }
+      return [];
+    }
+
+    function valorTotalAgendamento(ag) {
+      return normalizarServicos(ag).reduce((s, sv) => s + (Number(sv.valor) || 0), 0);
+    }
+
+    function duracaoTotalAgendamento(ag) {
+      return normalizarServicos(ag).reduce((s, sv) => s + (Number(sv.duracao) || 0), 0);
+    }
+
+    function nomeProfissional(pid) {
+      const p = state.profissionais.find(x => x.id === pid);
+      return p ? p.nome : 'Não definido';
+    }
+
+    function resumoServicos(ag) {
+      const servicos = normalizarServicos(ag);
+      if (!servicos.length) return '—';
+      return servicos.map(s => s.nome).join(' + ');
+    }
+
     // ===== HOME =====
     function renderHome() {
       const hojeStr = hoje();
       const agendamentosHoje = state.agendamentos.filter(a => a.data === hojeStr);
       const concluidosHoje = agendamentosHoje.filter(a => a.status === 'concluido');
       const clientesUnicos = new Set(agendamentosHoje.map(a => a.cliente)).size;
-      const previsto = agendamentosHoje.reduce((s, a) => s + (Number(a.valor) || 0), 0);
+      const previsto = agendamentosHoje.reduce((s, a) => s + valorTotalAgendamento(a), 0);
 
       document.getElementById('statAtend').textContent = agendamentosHoje.length;
       document.getElementById('statClientes').textContent = clientesUnicos;
       document.getElementById('statPrevisto').textContent = formatarMoeda(previsto);
       document.getElementById('statRealizados').textContent = concluidosHoje.length;
 
-      // Próximo atendimento
       const futuros = state.agendamentos
         .filter(a => a.data >= hojeStr && a.status !== 'cancelado' && a.status !== 'concluido')
         .sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
       const prox = futuros[0];
       document.getElementById('proximoAtend').textContent = prox
-        ? `${prox.cliente} · ${formatarData(prox.data)} às ${prox.hora} · ${prox.servico}`
+        ? `${prox.cliente} · ${formatarData(prox.data)} às ${prox.hora} · ${resumoServicos(prox)}`
         : 'Nenhum agendamento futuro confirmado';
 
-      // Lista do dia
       const lista = document.getElementById('listaHomeAgenda');
       if (!agendamentosHoje.length) {
         lista.innerHTML = '<div class="empty">Nenhum atendimento hoje. Aproveite! ✨</div>';
@@ -1013,11 +1180,11 @@
             <div class="card-row">
               <div>
                 <div class="card-title">${a.cliente}</div>
-                <div class="card-sub">🕐 ${a.hora || '--'} · ${a.servico || '—'}</div>
+                <div class="card-sub">🕐 ${a.hora || '--'} · ${resumoServicos(a)}</div>
               </div>
               <div style="text-align:right;">
                 <span class="badge badge-${a.status}">${a.status}</span>
-                <div class="card-title" style="color:var(--gold); margin-top:6px;">${formatarMoeda(a.valor)}</div>
+                <div class="card-title" style="color:var(--gold); margin-top:6px;">${formatarMoeda(valorTotalAgendamento(a))}</div>
               </div>
             </div>
           </div>`).join('');
@@ -1028,6 +1195,7 @@
       const [a, m, d] = iso.split('-');
       return `${d}/${m}/${a}`;
     }
+
     // ===== AGENDA =====
     function renderAgenda() {
       const lista = document.getElementById('listaAgendamentos');
@@ -1040,7 +1208,8 @@
         return;
       }
       lista.innerHTML = itens.map(a => {
-        const prof = state.profissionais.find(p => p.id === a.profissionalId);
+        const servicos = normalizarServicos(a);
+        const profissionais = [...new Set(servicos.map(s => nomeProfissional(s.profissionalId)))].join(', ');
         const pagamento = a.status === 'concluido' && a.formaPagamento
           ? `<div class="card-sub" style="margin-top:4px;">💳 ${labelFormaPagamento(a.formaPagamento)}</div>` : '';
         return `
@@ -1048,13 +1217,13 @@
             <div class="card-row">
               <div>
                 <div class="card-title">${a.cliente || 'Cliente'}</div>
-                <div class="card-sub">🕐 ${a.hora || '--'} · ${a.servico || '—'}</div>
-                <div class="card-sub">${prof ? '👤 ' + prof.nome : ''}</div>
+                <div class="card-sub">🕐 ${a.hora || '--'} · ${resumoServicos(a)}</div>
+                <div class="card-sub">${profissionais ? '👤 ' + profissionais : ''}</div>
                 ${pagamento}
               </div>
               <div style="text-align:right;">
                 <span class="badge badge-${a.status}">${a.status}</span>
-                <div class="card-title" style="color:var(--gold); margin-top:6px;">${formatarMoeda(a.valor)}</div>
+                <div class="card-title" style="color:var(--gold); margin-top:6px;">${formatarMoeda(valorTotalAgendamento(a))}</div>
               </div>
             </div>
             <div style="display:flex; gap:6px; margin-top:10px;">
@@ -1068,22 +1237,139 @@
     document.getElementById('filtroData').addEventListener('change', renderAgenda);
     document.getElementById('btnAddAgendamento').addEventListener('click', () => abrirModalAgendamento());
 
+    // ===== SERVIÇOS (CATÁLOGO) =====
+    function renderServicos() {
+      const lista = document.getElementById('listaServicos');
+      if (!state.servicos.length) {
+        lista.innerHTML = '<div class="empty">Nenhum serviço cadastrado.</div>';
+        return;
+      }
+      lista.innerHTML = state.servicos.map(s => `
+        <div class="card">
+          <div class="card-row">
+            <div>
+              <div class="card-title">${s.nome}</div>
+              <div class="card-sub">${s.duracao || 0} min</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="servico-preco">${formatarMoeda(s.valor)}</div>
+              <button class="btn-outline btn-small" onclick="editarServico('${s.id}')" style="margin-top:8px;">Editar</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    document.getElementById('btnAddServico').addEventListener('click', () => abrirModalServico());
+
+    function abrirModalServico(dados = {}) {
+      document.getElementById('tituloServico').textContent = dados.id ? 'Editar Serviço' : 'Novo Serviço';
+      document.getElementById('servicoId').value = dados.id || '';
+      document.getElementById('servicoNome').value = dados.nome || '';
+      document.getElementById('servicoValor').value = dados.valor ?? '';
+      document.getElementById('servicoDuracao').value = dados.duracao ?? '';
+      document.getElementById('btnExcluirServico').hidden = !dados.id;
+      document.getElementById('modalServico').hidden = false;
+    }
+
+    function editarServico(id) {
+      const s = state.servicos.find(x => x.id === id);
+      if (s) abrirModalServico(s);
+    }
+
+    document.getElementById('btnSalvarServico').addEventListener('click', async () => {
+      const id = document.getElementById('servicoId').value;
+      const dados = {
+        nome: document.getElementById('servicoNome').value.trim(),
+        valor: Number(document.getElementById('servicoValor').value) || 0,
+        duracao: Number(document.getElementById('servicoDuracao').value) || 0
+      };
+      if (!dados.nome) { alert('Informe o nome do serviço.'); return; }
+      const base = db.collection('users').doc(state.usuario.uid).collection('servicos');
+      if (id) await base.doc(id).update(dados);
+      else await base.add(dados);
+      document.getElementById('modalServico').hidden = true;
+    });
+
+    document.getElementById('btnExcluirServico').addEventListener('click', async () => {
+      const id = document.getElementById('servicoId').value;
+      if (id && confirm('Excluir este serviço?')) {
+        await db.collection('users').doc(state.usuario.uid).collection('servicos').doc(id).delete();
+        document.getElementById('modalServico').hidden = true;
+      }
+    });
+    document.getElementById('btnFecharServico').addEventListener('click', () => {
+      document.getElementById('modalServico').hidden = true;
+    });
+
+    function popularSelectServicos() {
+      const sel = document.getElementById('agServicoSelect');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">— Selecione —</option>' +
+        state.servicos.map(s => `<option value="${s.id}">${s.nome} — ${formatarMoeda(s.valor)} · ${s.duracao || 0}min</option>`).join('');
+    }
+
+    // ===== MODAL AGENDAMENTO COM MÚLTIPLOS SERVIÇOS =====
     function abrirModalAgendamento(dados = {}) {
       document.getElementById('tituloAgendamento').textContent = dados.id ? 'Editar Agendamento' : 'Novo Agendamento';
       document.getElementById('agId').value = dados.id || '';
       document.getElementById('agData').value = dados.data || document.getElementById('filtroData').value || hoje();
       document.getElementById('agHora').value = dados.hora || '09:00';
       document.getElementById('agCliente').value = dados.cliente || '';
-      document.getElementById('agServico').value = dados.servico || '';
-      document.getElementById('agValor').value = dados.valor ?? '';
       document.getElementById('agStatus').value = dados.status || 'agendado';
-      document.getElementById('agProfissional').value = dados.profissionalId || '';
       document.getElementById('agFormaPagamento').value = dados.formaPagamento || '';
       document.getElementById('btnExcluirAgendamento').hidden = !dados.id;
+
+      state.agServicosTemp = dados.id ? [...normalizarServicos(dados)] : [];
+      renderAgServicosTemp();
+
       popularSelectProfissionais();
+      popularSelectServicos();
       popularDatalistClientes();
       document.getElementById('modalAgendamento').hidden = false;
     }
+
+    function renderAgServicosTemp() {
+      const container = document.getElementById('agServicosLista');
+      if (!state.agServicosTemp.length) {
+        container.innerHTML = '<div class="empty" style="padding:14px 0;">Nenhum serviço adicionado.</div>';
+      } else {
+        container.innerHTML = state.agServicosTemp.map((s, idx) => `
+          <div class="servico-item">
+            <div class="servico-item-cabecalho">
+              <strong>${s.nome}</strong>
+              <button class="btn-danger btn-small" onclick="removerServicoAgend(${idx})">Remover</button>
+            </div>
+            <div class="card-sub">👤 ${nomeProfissional(s.profissionalId)} · ${formatarMoeda(s.valor)} · ${s.duracao || 0}min</div>
+          </div>`).join('');
+      }
+      const total = state.agServicosTemp.reduce((s, i) => s + Number(i.valor), 0);
+      document.getElementById('agTotalServicos').textContent = 'Total: ' + formatarMoeda(total);
+    }
+
+    function adicionarServicoAgend() {
+      const servicoId = document.getElementById('agServicoSelect').value;
+      const profissionalId = document.getElementById('agServicoProfissional').value;
+      if (!servicoId) { alert('Selecione um serviço.'); return; }
+      const s = state.servicos.find(x => x.id === servicoId);
+      if (!s) return;
+      state.agServicosTemp.push({
+        servicoId: s.id,
+        nome: s.nome,
+        valor: s.valor,
+        duracao: s.duracao || 0,
+        profissionalId: profissionalId || ''
+      });
+      document.getElementById('agServicoSelect').value = '';
+      document.getElementById('agServicoProfissional').value = '';
+      renderAgServicosTemp();
+    }
+
+    function removerServicoAgend(idx) {
+      state.agServicosTemp.splice(idx, 1);
+      renderAgServicosTemp();
+    }
+
+    document.getElementById('btnAdicionarServicoAgend').addEventListener('click', adicionarServicoAgend);
 
     function editarAgendamento(id) {
       const a = state.agendamentos.find(x => x.id === id);
@@ -1097,8 +1383,20 @@
       document.getElementById('fecharComandaId').value = id;
       document.getElementById('fecharComandaInfo').innerHTML = `
         <strong>${a.cliente}</strong><br>
-        ${a.servico || '—'} · ${formatarMoeda(a.valor)}
+        ${formatarData(a.data)} às ${a.hora || '--'}
       `;
+
+      const servicos = normalizarServicos(a);
+      const containerServicos = document.getElementById('comandaServicosLista');
+      containerServicos.innerHTML = servicos.length ? servicos.map(s => `
+        <div class="comanda-produto">
+          <div>
+            <div class="card-title">${s.nome}</div>
+            <div class="card-sub">${nomeProfissional(s.profissionalId)}</div>
+          </div>
+          <div class="card-title" style="color:var(--gold);">${formatarMoeda(s.valor)}</div>
+        </div>`).join('') : '<div class="empty" style="padding:10px 0;">Sem serviços.</div>';
+
       document.getElementById('fecharFormaPagamento').value = a.formaPagamento || 'dinheiro';
       popularSelectProdutosComanda();
       renderComanda();
@@ -1111,13 +1409,13 @@
         data: document.getElementById('agData').value,
         hora: document.getElementById('agHora').value,
         cliente: document.getElementById('agCliente').value.trim(),
-        servico: document.getElementById('agServico').value.trim(),
-        valor: Number(document.getElementById('agValor').value) || 0,
+        servicos: state.agServicosTemp,
         status: document.getElementById('agStatus').value,
-        profissionalId: document.getElementById('agProfissional').value || '',
         formaPagamento: document.getElementById('agFormaPagamento').value || ''
       };
       if (!dados.data || !dados.cliente) { alert('Preencha data e cliente.'); return; }
+      if (!dados.servicos.length) { alert('Adicione pelo menos um serviço.'); return; }
+
       const base = db.collection('users').doc(state.usuario.uid).collection('agendamentos');
       if (id) await base.doc(id).update(dados);
       else await base.add(dados);
@@ -1146,7 +1444,7 @@
     function renderComanda() {
       const container = document.getElementById('comandaProdutosLista');
       const a = state.agendamentos.find(x => x.id === document.getElementById('fecharComandaId').value);
-      const valorServico = a ? Number(a.valor) || 0 : 0;
+      const valorServicos = a ? valorTotalAgendamento(a) : 0;
 
       if (!state.comandaAtual.length) {
         container.innerHTML = '<div class="empty" style="padding:14px 0;">Nenhum produto adicionado.</div>';
@@ -1165,8 +1463,9 @@
       }
 
       const totalProdutos = state.comandaAtual.reduce((s, i) => s + Number(i.valorTotal), 0);
-      document.getElementById('comandaTotal').textContent = 'Total produtos: ' + formatarMoeda(totalProdutos);
-      document.getElementById('comandaTotalGeral').textContent = 'Total: ' + formatarMoeda(valorServico + totalProdutos);
+      document.getElementById('comandaTotalProdutos').textContent = 'Produtos: ' + formatarMoeda(totalProdutos);
+      document.getElementById('comandaTotalServicos').textContent = 'Serviços: ' + formatarMoeda(valorServicos);
+      document.getElementById('comandaTotalGeral').textContent = 'Total: ' + formatarMoeda(valorServicos + totalProdutos);
     }
 
     function adicionarProdutoComanda() {
@@ -1204,13 +1503,11 @@
       const a = state.agendamentos.find(x => x.id === id);
       const base = db.collection('users').doc(state.usuario.uid);
 
-      // Atualiza agendamento
       await base.collection('agendamentos').doc(id).update({
         status: 'concluido',
         formaPagamento: fp
       });
 
-      // Grava produtos da comanda como vendas vinculadas ao cliente/profissional do agendamento
       for (const item of state.comandaAtual) {
         await base.collection('vendas').add({
           ...item,
@@ -1222,7 +1519,6 @@
         });
       }
 
-      // Baixa estoque
       for (const item of state.comandaAtual) {
         const p = state.produtos.find(x => x.id === item.produtoId);
         if (p) await base.collection('produtos').doc(item.produtoId).update({
@@ -1288,7 +1584,7 @@
         .filter(a => a.cliente === c.nome && a.status === 'concluido')
         .sort((a, b) => (b.data || '').localeCompare(a.data || ''));
       const totalVisitas = atendimentos.length;
-      const totalGasto = atendimentos.reduce((s, a) => s + (Number(a.valor) || 0), 0);
+      const totalGasto = atendimentos.reduce((s, a) => s + valorTotalAgendamento(a), 0);
       const ticketMedio = totalVisitas > 0 ? totalGasto / totalVisitas : 0;
       document.getElementById('histTotalVisitas').textContent = totalVisitas;
       document.getElementById('histTicketMedio').textContent = formatarMoeda(ticketMedio);
@@ -1299,8 +1595,8 @@
         lista.innerHTML = atendimentos.map(a => `
           <div class="historico-item">
             <div class="data">${formatarData(a.data)} às ${a.hora || '--'}</div>
-            <div class="servico">${a.servico || '—'}</div>
-            <div class="valor">${formatarMoeda(a.valor)} ${a.formaPagamento ? '· ' + labelFormaPagamento(a.formaPagamento) : ''}</div>
+            <div class="servico">${resumoServicos(a)}</div>
+            <div class="valor">${formatarMoeda(valorTotalAgendamento(a))} ${a.formaPagamento ? '· ' + labelFormaPagamento(a.formaPagamento) : ''}</div>
           </div>`).join('');
       }
       document.getElementById('modalHistoricoCliente').hidden = false;
@@ -1501,7 +1797,7 @@
       const servicos = state.agendamentos
         .filter(a => a.status === 'concluido')
         .filter(a => mes === 'todos' || mesDe(a.data) === mes)
-        .reduce((s, a) => s + (Number(a.valor) || 0), 0);
+        .reduce((s, a) => s + valorTotalAgendamento(a), 0);
       const produtos = state.vendas
         .filter(v => mes === 'todos' || mesDe(v.data) === mes)
         .reduce((s, v) => s + (Number(v.valorTotal) || 0), 0);
@@ -1521,15 +1817,17 @@
           .filter(a => a.status === 'concluido')
           .filter(a => mes === 'todos' || mesDe(a.data) === mes)
           .forEach(a => {
-            const pid = a.profissionalId || 'sem';
-            if (!dados[pid]) dados[pid] = { nome: 'Não definido', total: 0, qtd: 0, comissao: 0 };
-            const prof = state.profissionais.find(p => p.id === pid);
-            if (prof) {
-              dados[pid].nome = prof.nome;
-              if (!prof.isDono) dados[pid].comissao += (a.valor || 0) * (prof.comissaoServico || 0) / 100;
-            }
-            dados[pid].total += Number(a.valor) || 0;
-            dados[pid].qtd++;
+            normalizarServicos(a).forEach(sv => {
+              const pid = sv.profissionalId || 'sem';
+              if (!dados[pid]) dados[pid] = { nome: 'Não definido', total: 0, qtd: 0, comissao: 0 };
+              const prof = state.profissionais.find(p => p.id === pid);
+              if (prof) {
+                dados[pid].nome = prof.nome;
+                if (!prof.isDono) dados[pid].comissao += (sv.valor || 0) * (prof.comissaoServico || 0) / 100;
+              }
+              dados[pid].total += Number(sv.valor) || 0;
+              dados[pid].qtd++;
+            });
           });
         state.vendas
           .filter(v => mes === 'todos' || mesDe(v.data) === mes)
@@ -1559,10 +1857,12 @@
           .filter(a => a.status === 'concluido')
           .filter(a => mes === 'todos' || mesDe(a.data) === mes)
           .forEach(a => {
-            const s = a.servico || 'Não definido';
-            if (!dados[s]) dados[s] = { total: 0, qtd: 0 };
-            dados[s].total += Number(a.valor) || 0;
-            dados[s].qtd++;
+            normalizarServicos(a).forEach(sv => {
+              const s = sv.nome || 'Não definido';
+              if (!dados[s]) dados[s] = { total: 0, qtd: 0 };
+              dados[s].total += Number(sv.valor) || 0;
+              dados[s].qtd++;
+            });
           });
         const linhas = Object.entries(dados).sort((a, b) => b[1].total - a[1].total);
         div.innerHTML = `
@@ -1616,7 +1916,7 @@
             const m = mesDe(a.data);
             if (!m) return;
             if (!meses[m]) meses[m] = { servicos: 0, vendas: 0 };
-            meses[m].servicos += Number(a.valor) || 0;
+            meses[m].servicos += valorTotalAgendamento(a);
           });
         state.vendas.forEach(v => {
           const m = mesDe(v.data);
@@ -1712,7 +2012,7 @@
     });
 
     function popularSelectProfissionais() {
-      ['agProfissional', 'vendaProfissional'].forEach(id => {
+      ['agServicoProfissional', 'vendaProfissional'].forEach(id => {
         const sel = document.getElementById(id);
         if (!sel) return;
         const atual = sel.value;
@@ -1730,15 +2030,26 @@
       document.getElementById('modalConfig').hidden = true;
     });
 
+    document.getElementById('btnSalvarConfig').addEventListener('click', async () => {
+      const nome = document.getElementById('configEstabelecimento').value.trim();
+      const slogan = document.getElementById('configSlogan').value.trim();
+      await db.collection('users').doc(state.usuario.uid).collection('config').doc('estabelecimento').set({ nome, slogan });
+      document.getElementById('saudacaoTexto').textContent = `${saudacao()}, ${nome}! 👋`;
+      document.getElementById('headerSubtitulo').textContent = slogan || MARCA.slogan;
+      document.getElementById('modalConfig').hidden = true;
+      alert('Configurações salvas!');
+    });
+
     document.getElementById('btnExportar').addEventListener('click', async () => {
       try {
         const base = db.collection('users').doc(state.usuario.uid);
-        const [ag, pr, ve, pf, cl] = await Promise.all([
+        const [ag, pr, ve, pf, cl, sv] = await Promise.all([
           base.collection('agendamentos').get(),
           base.collection('produtos').get(),
           base.collection('vendas').get(),
           base.collection('profissionais').get(),
-          base.collection('clientes').get()
+          base.collection('clientes').get(),
+          base.collection('servicos').get()
         ]);
         const dados = {
           exportadoEm: new Date().toISOString(),
@@ -1746,13 +2057,14 @@
           produtos: pr.docs.map(d => d.data()),
           vendas: ve.docs.map(d => d.data()),
           profissionais: pf.docs.map(d => d.data()),
-          clientes: cl.docs.map(d => d.data())
+          clientes: cl.docs.map(d => d.data()),
+          servicos: sv.docs.map(d => d.data())
         };
         const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'backup-agenda-allan-' + hoje() + '.json';
+        a.download = 'backup-agenda-' + hoje() + '.json';
         a.click();
         URL.revokeObjectURL(url);
       } catch (e) { alert('Erro: ' + e.message); }
@@ -1769,7 +2081,7 @@
           const base = db.collection('users').doc(state.usuario.uid);
           const batch = db.batch();
           let cont = 0;
-          const colecoes = ['agendamentos', 'produtos', 'vendas', 'profissionais', 'clientes'];
+          const colecoes = ['agendamentos', 'produtos', 'vendas', 'profissionais', 'clientes', 'servicos'];
           colecoes.forEach(col => {
             (data[col] || []).forEach(item => {
               const x = { ...item }; delete x.id;
