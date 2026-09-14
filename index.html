@@ -22,6 +22,7 @@
       --success: #30a46c;
       --info: #3b82f6;
       --warning: #f59e0b;
+      --whatsapp: #25d366;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -59,6 +60,10 @@
     }
     .btn-danger { background: var(--danger); color: #fff; font-weight: 600; }
     .btn-small { padding: 7px 12px; font-size: 13px; border-radius: 9px; }
+    .btn-whatsapp {
+      background: transparent; color: var(--whatsapp); border: 1.5px solid var(--whatsapp);
+      font-weight: 600; padding: 7px 12px; border-radius: 9px; font-size: 13px;
+    }
 
     /* ===== LOGIN ===== */
     #loginScreen {
@@ -564,6 +569,7 @@
   </div>
 
   <!-- ================= MODAL AGENDAMENTO ================= -->
+  <!-- ================= MODAL AGENDAMENTO ================= -->
   <div class="modal-overlay" id="modalAgendamento" hidden>
     <div class="modal">
       <h3 id="tituloAgendamento">Novo Agendamento</h3>
@@ -607,6 +613,7 @@
         <option value="pix">📱 Pix</option>
         <option value="credito">💳 Cartão de Crédito</option>
         <option value="debito">💳 Cartão de Débito</option>
+        <option value="assinatura">🔄 Assinatura</option>
         <option value="outro">📝 Outro</option>
       </select>
       <div class="modal-acoes">
@@ -671,6 +678,7 @@
         <option value="pix">📱 Pix</option>
         <option value="credito">💳 Cartão de Crédito</option>
         <option value="debito">💳 Cartão de Débito</option>
+        <option value="assinatura">🔄 Assinatura</option>
         <option value="outro">📝 Outro</option>
       </select>
       <div class="modal-acoes">
@@ -746,6 +754,7 @@
         <option value="pix">📱 Pix</option>
         <option value="credito">💳 Cartão de Crédito</option>
         <option value="debito">💳 Cartão de Débito</option>
+        <option value="assinatura">🔄 Assinatura</option>
         <option value="outro">📝 Outro</option>
       </select>
 
@@ -875,6 +884,7 @@
         pix: 'Pix',
         credito: 'Cartão de Crédito',
         debito: 'Cartão de Débito',
+        assinatura: 'Assinatura',
         outro: 'Outro'
       };
       return map[fp] || '—';
@@ -1114,7 +1124,6 @@
 
     // ===== HELPERS PARA SERVIÇOS DOS AGENDAMENTOS =====
     function normalizarServicos(ag) {
-      // compatibilidade com agendamentos antigos
       if (ag.servicos && Array.isArray(ag.servicos) && ag.servicos.length) return ag.servicos;
       if (ag.servico) {
         return [{
@@ -1145,6 +1154,38 @@
       const servicos = normalizarServicos(ag);
       if (!servicos.length) return '—';
       return servicos.map(s => s.nome).join(' + ');
+    }
+
+    // ===== WHATSAPP =====
+    function enviarWhatsAppAgendamento(agendamentoId) {
+      const ag = state.agendamentos.find(a => a.id === agendamentoId);
+      if (!ag) return;
+
+      const cliente = state.clientes.find(c => c.nome === ag.cliente);
+      let telefone = cliente?.telefone || '';
+
+      if (!telefone) {
+        alert('Cliente sem telefone cadastrado. Adicione o telefone para enviar a mensagem automática.');
+        return;
+      }
+
+      telefone = telefone.replace(/\D/g, '');
+      if (!telefone.startsWith('55')) {
+        telefone = '55' + telefone;
+      }
+
+      const dataFormatada = formatarData(ag.data);
+      const servicos = resumoServicos(ag);
+      const estabelecimento = document.getElementById('configEstabelecimento')?.value || 'nosso estabelecimento';
+
+      const mensagem = `Olá ${ag.cliente}! 👋%0A%0A` +
+        `Seu agendamento no ${estabelecimento} está confirmado:%0A` +
+        `📅 Data: ${dataFormatada}%0A` +
+        `🕐 Horário: ${ag.hora || '--'}%0A` +
+        `✂️ Serviço(s): ${servicos}%0A%0A` +
+        `Aguardamos você! 😊`;
+
+      window.open(`https://wa.me/${telefone}?text=${mensagem}`, '_blank');
     }
 
     // ===== HOME =====
@@ -1187,6 +1228,9 @@
                 <div class="card-title" style="color:var(--gold); margin-top:6px;">${formatarMoeda(valorTotalAgendamento(a))}</div>
               </div>
             </div>
+            <div style="display:flex; gap:6px; margin-top:10px;">
+              <button class="btn-whatsapp" onclick="enviarWhatsAppAgendamento('${a.id}')">📱 WhatsApp</button>
+            </div>
           </div>`).join('');
     }
 
@@ -1226,9 +1270,10 @@
                 <div class="card-title" style="color:var(--gold); margin-top:6px;">${formatarMoeda(valorTotalAgendamento(a))}</div>
               </div>
             </div>
-            <div style="display:flex; gap:6px; margin-top:10px;">
+            <div style="display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;">
               <button class="btn-outline btn-small" onclick="editarAgendamento('${a.id}')">Editar</button>
               ${a.status !== 'concluido' ? `<button class="btn btn-small" onclick="concluirAgendamento('${a.id}')">Concluir</button>` : ''}
+              <button class="btn-whatsapp" onclick="enviarWhatsAppAgendamento('${a.id}')">📱 WhatsApp</button>
             </div>
           </div>`;
       }).join('');
