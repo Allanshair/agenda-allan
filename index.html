@@ -2190,6 +2190,87 @@
         alert('📧 E-mail enviado para ' + state.usuario.email);
       } catch (e) { alert('Erro: ' + e.message); }
     });
+        // ===== CONTROLE DE ASSINATURA E TRIAL =====
+
+    const LINK_PAGAMENTO = 'https://mpago.la/1MyzDbG';
+
+    async function verificarAcesso(uid) {
+      const ref = db.collection('users').doc(uid).collection('assinatura').doc('status');
+      const snap = await ref.get();
+
+      // Se não existe assinatura, cria trial de 7 dias
+      if (!snap.exists) {
+        const agora = new Date();
+        const trialFim = new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+        await ref.set({
+          trialInicio: firebase.firestore.Timestamp.fromDate(agora),
+          trialFim: firebase.firestore.Timestamp.fromDate(trialFim),
+          trialAtivo: true,
+          assinaturaAtiva: false,
+          assinaturaExpira: null,
+          linkPagamento: LINK_PAGAMENTO,
+          criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        return { podeUsar: true, diasRestantes: 7, motivo: 'trial' };
+      }
+
+      const dados = snap.data();
+      const agora = new Date();
+
+      const trialFim = dados.trialFim?.toDate ? dados.trialFim.toDate() : new Date(dados.trialFim);
+      const assinaturaExpira = dados.assinaturaExpira?.toDate ? dados.assinaturaExpira.toDate() : (dados.assinaturaExpira ? new Date(dados.assinaturaExpira) : null);
+
+      const noTrial = dados.trialAtivo === true && agora < trialFim;
+      const naAssinatura = dados.assinaturaAtiva === true && assinaturaExpira && agora < assinaturaExpira;
+
+      if (noTrial) {
+        const diasRestantes = Math.ceil((trialFim - agora) / (1000 * 60 * 60 * 24));
+        return { podeUsar: true, diasRestantes, motivo: 'trial' };
+      }
+
+      if (naAssinatura) {
+        const diasRestantes = Math.ceil((assinaturaExpira - agora) / (1000 * 60 * 60 * 24));
+        return { podeUsar: true, diasRestantes, motivo: 'assinatura' };
+      }
+
+      return { podeUsar: false, motivo: 'bloqueado' };
+    }
+
+    function mostrarBloqueio() {
+      document.getElementById('loginScreen').hidden = true;
+      document.getElementById('appScreen').hidden = true;
+      document.getElementById('telaBloqueio').hidden = false;
+    }
+
+    function mostrarApp() {
+      document.getElementById('loginScreen').hidden = true;
+      document.getElementById('telaBloqueio').hidden = true;
+      document.getElementById('appScreen').hidden = false;
+    }
+
+    document.getElementById('btnJaPaguei').addEventListener('click', async () => {
+      const btn = document.getElementById('btnJaPaguei');
+      btn.disabled = true;
+      btn.textContent = '⏳ Verificando...';
+
+      if (state.usuario?.uid) {
+        const resultado = await verificarAcesso(state.usuario.uid);
+        if (resultado.podeUsar) {
+          location.reload();
+        } else {
+          alert('Ainda não identificamos o pagamento. Se você acabou de pagar, aguarde alguns minutos. Se o problema persistir, entre em contato.');
+          btn.disabled = false;
+          btn.textContent = '✅ Já fiz o pagamento';
+        }
+      }
+    });
+
+    document.getElementById('btnSairBloqueio').addEventListener('click', () => {
+      auth.signOut();
+    });
+
   </script>
 </body>
 </html>
