@@ -976,21 +976,41 @@
     const loginScreen = document.getElementById('loginScreen');
     const appScreen = document.getElementById('appScreen');
 
+    
     auth.onAuthStateChanged(async user => {
       aplicarMarca();
-      if (user) {
-        state.usuario = user;
-        loginScreen.hidden = true;
-        appScreen.hidden = false;
-        const cfg = await carregarConfigEstabelecimento();
-        const nome = cfg?.nome || user.displayName || user.email.split('@')[0];
-        document.getElementById('saudacaoTexto').textContent = `${saudacao()}, ${nome}! 👋`;
-        document.getElementById('saudacaoData').textContent = dataExtenso();
-        iniciarApp(user.uid);
-      } else {
+
+      if (!user) {
         state.usuario = null;
         loginScreen.hidden = false;
         appScreen.hidden = true;
+        document.getElementById('telaBloqueio').hidden = true;
+        return;
+      }
+
+      state.usuario = user;
+
+      // Verifica trial ou assinatura
+      const acesso = await verificarAcesso(user.uid);
+
+      if (!acesso.podeUsar) {
+        mostrarBloqueio();
+        return;
+      }
+
+      mostrarApp();
+
+      const cfg = await carregarConfigEstabelecimento();
+      const nome = cfg?.nome || user.displayName || user.email.split('@')[0];
+      document.getElementById('saudacaoTexto').textContent = `${saudacao()}, ${nome}! 👋`;
+      document.getElementById('saudacaoData').textContent = dataExtenso();
+      iniciarApp(user.uid);
+
+      // Aviso quando o trial está perto de acabar
+      if (acesso.motivo === 'trial' && acesso.diasRestantes <= 3) {
+        setTimeout(() => {
+          alert(`⏳ Atenção: faltam ${acesso.diasRestantes} dias do seu período gratuito. Assine para continuar usando.`);
+        }, 1500);
       }
     });
 
