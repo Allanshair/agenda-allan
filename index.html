@@ -568,6 +568,47 @@
     </nav>
   </div>
 
+  <!-- ================= TELA DE BLOQUEIO ================= -->
+  <div id="telaBloqueio" hidden>
+    <div style="
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px; text-align: center; background: var(--bg);
+    ">
+      <div style="font-size: 64px; margin-bottom: 16px;">🔒</div>
+      <h2 style="color: var(--gold); font-size: 24px; margin-bottom: 12px;">Período gratuito encerrado</h2>
+      <p style="color: var(--muted); max-width: 320px; margin-bottom: 24px; line-height: 1.5;">
+        Seus 7 dias grátis acabaram. Para continuar usando o <strong>AGENDA</strong>, ative sua assinatura por apenas <strong>R$ 19,90/mês</strong>.
+      </p>
+      
+      <div id="infoBloqueio" style="
+        background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+        padding: 16px; margin-bottom: 24px; max-width: 340px; width: 100%;
+      ">
+        <div style="color: var(--muted); font-size: 13px; margin-bottom: 6px;">Status da conta</div>
+        <div style="color: var(--danger); font-weight: 700; font-size: 16px;">⛔ Acesso bloqueado</div>
+      </div>
+
+      <a href="https://mpago.la/1MyzDbG" target="_blank" class="btn" style="
+        display: inline-block; text-decoration: none; margin-bottom: 14px; width: 100%; max-width: 340px;
+      ">💳 Pagar agora R$ 19,90/mês</a>
+      
+      <button class="btn-outline" id="btnJaPaguei" style="width: 100%; max-width: 340px;">
+        ✅ Já fiz o pagamento
+      </button>
+      
+      <p style="color: var(--muted); font-size: 13px; margin-top: 20px; max-width: 320px;">
+        Após o pagamento, seu acesso será liberado em até alguns minutos. Em caso de dúvida, entre em contato.
+      </p>
+      
+      <button class="btn-danger" id="btnSairBloqueio" style="margin-top: 24px; width: 100%; max-width: 340px;">
+        🚪 Sair da conta
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= MODAL AGENDAMENTO ================= -->
+
+
   <!-- ================= MODAL AGENDAMENTO ================= -->
   <!-- ================= MODAL AGENDAMENTO ================= -->
   <div class="modal-overlay" id="modalAgendamento" hidden>
