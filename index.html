@@ -607,8 +607,7 @@
   </div>
 
   <!-- ================= MODAL AGENDAMENTO ================= -->
-
-
+    <!-- ================= MODAL AGENDAMENTO ================= -->
   <!-- ================= MODAL AGENDAMENTO ================= -->
   <!-- ================= MODAL AGENDAMENTO ================= -->
   <div class="modal-overlay" id="modalAgendamento" hidden>
@@ -898,6 +897,17 @@
       nomeCompleto: 'ALLYAN Tech — AGENDA',
       slogan: 'Gestão completa do seu salão'
     };
+
+    // ============================================================
+    // ADMINS — E-MAILS QUE NUNCA SÃO BLOQUEADOS
+    // ============================================================
+    const ADMIN_EMAILS = [
+      'allancarlos.belezacapilar@gmail.com'
+    ];
+
+    function isAdmin(email) {
+      return ADMIN_EMAILS.includes(email?.toLowerCase?.() || email);
+    }
 
     const state = {
       usuario: null,
@@ -1743,7 +1753,6 @@
       if (!dl) return;
       dl.innerHTML = state.clientes.map(c => `<option value="${c.nome}">`).join('');
     }
-
     // ===== PRODUTOS =====
     function renderProdutos() {
       const lista = document.getElementById('listaProdutos');
@@ -2215,6 +2224,11 @@
     const LINK_PAGAMENTO = 'https://mpago.la/1MyzDbG';
 
     async function verificarAcesso(uid) {
+      // Administradores nunca são bloqueados
+      if (isAdmin(state.usuario?.email)) {
+        return { podeUsar: true, diasRestantes: 999, motivo: 'admin' };
+      }
+
       const ref = db.collection('users').doc(uid).collection('assinatura').doc('status');
       const snap = await ref.get();
 
@@ -2294,3 +2308,4 @@
   </script>
 </body>
 </html>
+
