@@ -2241,54 +2241,40 @@
     }
 
 
-    async function verificarAcesso(uid) {
+       async function verificarAcesso(uid) {
       // Administradores nunca são bloqueados
       if (isAdmin(state.usuario?.email)) {
         return { podeUsar: true, diasRestantes: 999, motivo: 'admin' };
       }
 
-      const ref = db.collection('users').doc(uid).collection('assinatura').doc('status');
-      const snap = await ref.get();
-
-      // Se não existe assinatura, cria trial de 7 dias
-      if (!snap.exists) {
-        const agora = new Date();
-        const trialFim = new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-        await ref.set({
-          trialInicio: firebase.firestore.Timestamp.fromDate(agora),
-          trialFim: firebase.firestore.Timestamp.fromDate(trialFim),
-          trialAtivo: true,
-          assinaturaAtiva: false,
-          assinaturaExpira: null,
-          linkPagamento: LINK_PAGAMENTO,
-          criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        return { podeUsar: true, diasRestantes: 7, motivo: 'trial' };
-      }
-
-      const dados = snap.data();
       const agora = new Date();
 
-      const trialFim = dados.trialFim?.toDate ? dados.trialFim.toDate() : new Date(dados.trialFim);
-      const assinaturaExpira = dados.assinaturaExpira?.toDate ? dados.assinaturaExpira.toDate() : (dados.assinaturaExpira ? new Date(dados.assinaturaExpira) : null);
+      // 1) TRIAL — fica no documento do usuário
+      const userSnap = await db.collection('users').doc(uid).get();
+      const perfil = userSnap.exists ? userSnap.data() : {};
 
-      const noTrial = dados.trialAtivo === true && agora < trialFim;
-      const naAssinatura = dados.assinaturaAtiva === true && assinaturaExpira && agora < assinaturaExpira;
+      const trialFim = perfil.trialFim?.toDate
+        ? perfil.trialFim.toDate()
+        : (perfil.trialFim ? new Date(perfil.trialFim) : null);
+      const noTrial = perfil.trialAtivo === true && trialFim && agora < trialFim;
 
-      if (noTrial) {
-        const diasRestantes = Math.ceil((trialFim - agora) / (1000 * 60 * 60 * 24));
-        return { podeUsar: true, diasRestantes, motivo: 'trial' };
-      }
+      // 2) ASSINATURA PAGA — só o backend (webhook) grava aqui
+      const assSnap = await db.collection('users').doc(uid).collection('assinatura').doc('status').get();
+      const ass = assSnap.exists ? assSnap.data() : {};
+      const assinaturaExpira = ass.assinaturaExpira?.toDate
+        ? ass.assinaturaExpira.toDate()
+        : (ass.assinaturaExpira ? new Date(ass.assinaturaExpira) : null);
+      const naAssinatura = ass.assinaturaAtiva === true && assinaturaExpira && agora < assinaturaExpira;
 
       if (naAssinatura) {
-        const diasRestantes = Math.ceil((assinaturaExpira - agora) / (1000 * 60 * 60 * 24));
-        return { podeUsar: true, diasRestantes, motivo: 'assinatura' };
+        return { podeUsar: true, diasRestantes: Math.ceil((assinaturaExpira - agora) / 86400000), motivo: 'assinatura' };
       }
-
+      if (noTrial) {
+        return { podeUsar: true, diasRestantes: Math.ceil((trialFim - agora) / 86400000), motivo: 'trial' };
+      }
       return { podeUsar: false, motivo: 'bloqueado' };
     }
+
 
     function mostrarBloqueio() {
       document.getElementById('loginScreen').hidden = true;
