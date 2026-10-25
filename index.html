@@ -2218,10 +2218,11 @@
         alert('📧 E-mail enviado para ' + state.usuario.email);
       } catch (e) { alert('Erro: ' + e.message); }
     });
-        // ===== CONTROLE DE ASSINATURA E TRIAL =====
+           // ===== CONTROLE DE ASSINATURA E TRIAL =====
 
     const LINK_PAGAMENTO = 'https://mpago.la/1MyzDbG';
-        async function garantirPerfil(user) {
+
+    async function garantirPerfil(user) {
       const userRef = db.collection('users').doc(user.uid);
       const snap = await userRef.get();
       if (snap.exists) return; // já existe, não cria trial de novo
@@ -2239,8 +2240,7 @@
       });
     }
 
-
-       async function verificarAcesso(uid) {
+    async function verificarAcesso(uid) {
       // Administradores nunca são bloqueados
       if (isAdmin(state.usuario?.email)) {
         return { podeUsar: true, diasRestantes: 999, motivo: 'admin' };
@@ -2274,7 +2274,6 @@
       return { podeUsar: false, motivo: 'bloqueado' };
     }
 
-
     function mostrarBloqueio() {
       document.getElementById('loginScreen').hidden = true;
       document.getElementById('appScreen').hidden = true;
@@ -2307,6 +2306,7 @@
     document.getElementById('btnSairBloqueio').addEventListener('click', () => {
       auth.signOut();
     });
+
 
   </script>
 </body>
