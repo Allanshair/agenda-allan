@@ -2222,6 +2222,24 @@
         // ===== CONTROLE DE ASSINATURA E TRIAL =====
 
     const LINK_PAGAMENTO = 'https://mpago.la/1MyzDbG';
+        async function garantirPerfil(user) {
+      const userRef = db.collection('users').doc(user.uid);
+      const snap = await userRef.get();
+      if (snap.exists) return; // já existe, não cria trial de novo
+
+      const agora = new Date();
+      const trialFim = new Date(agora.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+      await userRef.set({
+        nome: user.displayName || (user.email ? user.email.split('@')[0] : ''),
+        email: user.email || '',
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+        trialInicio: firebase.firestore.Timestamp.fromDate(agora),
+        trialFim: firebase.firestore.Timestamp.fromDate(trialFim),
+        trialAtivo: true
+      });
+    }
+
 
     async function verificarAcesso(uid) {
       // Administradores nunca são bloqueados
