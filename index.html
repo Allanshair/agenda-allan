@@ -65,7 +65,6 @@
       font-weight: 600; padding: 7px 12px; border-radius: 9px; font-size: 13px;
     }
 
-    /* ===== LOGIN ===== */
     #loginScreen {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       min-height: 100vh; padding: 24px;
@@ -83,7 +82,6 @@
     .link { color: var(--gold); font-weight: 600; cursor: pointer; }
     .msg-erro { color: var(--danger); font-size: 13px; margin-top: 8px; min-height: 18px; }
 
-    /* ===== HEADER ===== */
     header {
       position: sticky; top: 0; z-index: 20;
       background: rgba(10,10,10,.95); backdrop-filter: blur(8px);
@@ -108,7 +106,6 @@
     }
     .btn-icon:active { transform: scale(.95); }
 
-    /* ===== HOME / DASHBOARD ===== */
     .saudacao { padding: 20px 16px 10px; }
     .saudacao h2 { font-size: 24px; font-weight: 700; }
     .saudacao .data { color: var(--muted); font-size: 14px; margin-top: 4px; }
@@ -152,7 +149,6 @@
 
     .empty { text-align: center; color: var(--muted); padding: 30px 16px; font-size: 14px; }
 
-    /* ===== FAB ===== */
     .fab {
       position: fixed; bottom: 85px; right: 20px; z-index: 15;
       width: 56px; height: 56px; border-radius: 50%;
@@ -163,7 +159,6 @@
     }
     .fab:active { transform: scale(.93); }
 
-    /* ===== MAIN SECTIONS ===== */
     main { max-width: 640px; margin: 0 auto; }
     main section { padding: 16px; }
     section h2 { font-size: 18px; margin-bottom: 14px; color: var(--gold); }
@@ -188,7 +183,6 @@
     .badge-concluido { background: rgba(48,164,108,.15); color: var(--success); }
     .badge-cancelado { background: rgba(229,72,77,.15); color: var(--danger); }
 
-    /* ===== SERVIÇOS ===== */
     .servico-preco {
       color: var(--gold); font-weight: 700; font-size: 16px;
     }
@@ -196,7 +190,6 @@
       color: var(--muted); font-size: 12px;
     }
 
-    /* ===== FINANCEIRO ===== */
     .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
     .fin-card {
       background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px;
@@ -206,7 +199,6 @@
     .fin-card.total { grid-column: span 2; border-color: var(--gold); background: linear-gradient(135deg, #171204, #141414); }
     .fin-card.total .valor { color: var(--gold); font-size: 26px; }
 
-    /* ===== RELATÓRIOS ===== */
     .rel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
     .rel-card {
       background: var(--card); border: 1px solid var(--border);
@@ -232,7 +224,6 @@
     .rel-linha .nome { flex: 1; }
     .rel-linha .valor { color: var(--gold); font-weight: 700; }
 
-    /* ===== BOTTOM NAV ===== */
     nav {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
       background: rgba(14,14,14,.97); backdrop-filter: blur(8px);
@@ -248,7 +239,6 @@
     nav button .nav-ico { font-size: 20px; }
     nav button.ativo { color: var(--gold); }
 
-    /* ===== MODAL ===== */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 50;
       display: flex; align-items: flex-end; justify-content: center;
@@ -268,7 +258,6 @@
     .checkbox-line input { width: auto; }
     .checkbox-line label { margin: 0; color: var(--text); font-size: 14px; }
 
-    /* ===== MODAL HISTÓRICO CLIENTE ===== */
     .historico-lista { margin-top: 10px; }
     .historico-item {
       border-left: 3px solid var(--gold);
@@ -290,7 +279,6 @@
     .historico-stats .stat .num { font-size: 20px; font-weight: 800; color: var(--gold); }
     .historico-stats .stat .lbl { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-    /* ===== COMANDA / PRODUTOS ===== */
     .comanda-box {
       background: var(--card2);
       border: 1px solid var(--border);
@@ -321,7 +309,6 @@
       border-top: 1px solid var(--border);
     }
 
-    /* ===== ITENS DE SERVIÇO NO AGENDAMENTO ===== */
     .servico-item {
       background: var(--card2);
       border: 1px solid var(--border);
@@ -553,10 +540,8 @@
       </section>
     </main>
 
-    <!-- FAB -->
     <button class="fab" id="fabAdd">+</button>
 
-    <!-- BOTTOM NAV -->
     <nav>
       <button id="navHome" class="ativo"><span class="nav-ico">🏠</span>Início</button>
       <button id="navAgenda"><span class="nav-ico">📅</span>Agenda</button>
@@ -577,7 +562,7 @@
       <div style="font-size: 64px; margin-bottom: 16px;">🔒</div>
       <h2 style="color: var(--gold); font-size: 24px; margin-bottom: 12px;">Período gratuito encerrado</h2>
       <p style="color: var(--muted); max-width: 320px; margin-bottom: 24px; line-height: 1.5;">
-        Seus 7 dias grátis acabaram. Para continuar usando o <strong>AGENDA</strong>, ative sua assinatura por apenas <strong>R$ 19,90/mês</strong>.
+        Seus 30 dias grátis acabaram. Para continuar usando o <strong>AGENDA</strong>, ative sua assinatura por apenas <strong>R$ 19,90/mês</strong>.
       </p>
       
       <div id="infoBloqueio" style="
@@ -606,9 +591,6 @@
     </div>
   </div>
 
-  <!-- ================= MODAL AGENDAMENTO ================= -->
-    <!-- ================= MODAL AGENDAMENTO ================= -->
-  <!-- ================= MODAL AGENDAMENTO ================= -->
   <!-- ================= MODAL AGENDAMENTO ================= -->
   <div class="modal-overlay" id="modalAgendamento" hidden>
     <div class="modal">
@@ -898,9 +880,6 @@
       slogan: 'Gestão completa do seu salão'
     };
 
-    // ============================================================
-    // ADMINS — E-MAILS QUE NUNCA SÃO BLOQUEADOS
-    // ============================================================
     const ADMIN_EMAILS = [
       'allancarlos.belezacapilar@gmail.com'
     ];
@@ -982,11 +961,9 @@
       return null;
     }
 
-    // ===== AUTH =====
     const loginScreen = document.getElementById('loginScreen');
     const appScreen = document.getElementById('appScreen');
 
-    
     auth.onAuthStateChanged(async user => {
       aplicarMarca();
 
@@ -998,14 +975,16 @@
         return;
       }
 
-            state.usuario = user;
+      state.usuario = user;
 
-      // Garante que o perfil existe (cria o trial na 1ª vez)
       await garantirPerfil(user);
 
-      // Verifica trial ou assinatura
       const acesso = await verificarAcesso(user.uid);
-    }
+
+      if (!acesso.podeUsar) {
+        mostrarBloqueio();
+        return;
+      }
 
       mostrarApp();
 
@@ -1015,7 +994,6 @@
       document.getElementById('saudacaoData').textContent = dataExtenso();
       iniciarApp(user.uid);
 
-      // Aviso quando o trial está perto de acabar
       if (acesso.motivo === 'trial' && acesso.diasRestantes <= 3) {
         setTimeout(() => {
           alert(`⏳ Atenção: faltam ${acesso.diasRestantes} dias do seu período gratuito. Assine para continuar usando.`);
@@ -1088,7 +1066,6 @@
       return map[e.code] || 'Erro. Tente novamente.';
     }
 
-    // ===== NAVEGAÇÃO =====
     const secoes = {
       home: document.getElementById('secaoHome'),
       agenda: document.getElementById('secaoAgenda'),
@@ -1132,7 +1109,6 @@
     document.getElementById('acaoVerAgenda').addEventListener('click', () => navegar('agenda'));
     document.getElementById('fabAdd').addEventListener('click', () => abrirModalAgendamento());
 
-    // ===== FIRESTORE =====
     let listenersAtivos = [];
 
     async function iniciarApp(uid) {
@@ -1192,7 +1168,6 @@
       }
     }
 
-    // ===== HELPERS PARA SERVIÇOS DOS AGENDAMENTOS =====
     function normalizarServicos(ag) {
       if (ag.servicos && Array.isArray(ag.servicos) && ag.servicos.length) return ag.servicos;
       if (ag.servico) {
@@ -1226,7 +1201,6 @@
       return servicos.map(s => s.nome).join(' + ');
     }
 
-    // ===== WHATSAPP =====
     function enviarWhatsAppAgendamento(agendamentoId) {
       const ag = state.agendamentos.find(a => a.id === agendamentoId);
       if (!ag) return;
@@ -1258,7 +1232,6 @@
       window.open(`https://wa.me/${telefone}?text=${mensagem}`, '_blank');
     }
 
-    // ===== HOME =====
     function renderHome() {
       const hojeStr = hoje();
       const agendamentosHoje = state.agendamentos.filter(a => a.data === hojeStr);
@@ -1310,7 +1283,6 @@
       return `${d}/${m}/${a}`;
     }
 
-    // ===== AGENDA =====
     function renderAgenda() {
       const lista = document.getElementById('listaAgendamentos');
       const filtro = document.getElementById('filtroData').value;
@@ -1352,7 +1324,6 @@
     document.getElementById('filtroData').addEventListener('change', renderAgenda);
     document.getElementById('btnAddAgendamento').addEventListener('click', () => abrirModalAgendamento());
 
-    // ===== SERVIÇOS (CATÁLOGO) =====
     function renderServicos() {
       const lista = document.getElementById('listaServicos');
       if (!state.servicos.length) {
@@ -1423,7 +1394,6 @@
         state.servicos.map(s => `<option value="${s.id}">${s.nome} — ${formatarMoeda(s.valor)} · ${s.duracao || 0}min</option>`).join('');
     }
 
-    // ===== MODAL AGENDAMENTO COM MÚLTIPLOS SERVIÇOS =====
     function abrirModalAgendamento(dados = {}) {
       document.getElementById('tituloAgendamento').textContent = dados.id ? 'Editar Agendamento' : 'Novo Agendamento';
       document.getElementById('agId').value = dados.id || '';
@@ -1548,7 +1518,6 @@
       document.getElementById('modalAgendamento').hidden = true;
     });
 
-    // ===== COMANDA / PRODUTOS DO AGENDAMENTO =====
     function popularSelectProdutosComanda() {
       const sel = document.getElementById('comandaProdutoSelect');
       if (!sel) return;
@@ -1650,7 +1619,6 @@
       document.getElementById('modalFecharComanda').hidden = true;
     });
 
-    // ===== CLIENTES =====
     function renderClientes() {
       const lista = document.getElementById('listaClientes');
       if (!state.clientes.length) {
@@ -1752,7 +1720,7 @@
       if (!dl) return;
       dl.innerHTML = state.clientes.map(c => `<option value="${c.nome}">`).join('');
     }
-    // ===== PRODUTOS =====
+
     function renderProdutos() {
       const lista = document.getElementById('listaProdutos');
       if (!state.produtos.length) {
@@ -1825,7 +1793,6 @@
       document.getElementById('modalProduto').hidden = true;
     });
 
-    // ===== VENDAS AVULSAS =====
     function abrirVenda(produtoId) {
       const p = state.produtos.find(x => x.id === produtoId);
       if (!p) return;
@@ -1868,7 +1835,6 @@
       document.getElementById('modalVenda').hidden = true;
     });
 
-    // ===== FINANCEIRO =====
     function montarFiltroMeses() {
       const opcoes = ['todos'];
       const agora = new Date();
@@ -1920,7 +1886,6 @@
       document.getElementById('finTotal').textContent = formatarMoeda(servicos + produtos);
     }
 
-    // ===== RELATÓRIOS =====
     function abrirRelatorio(tipo) {
       const div = document.getElementById('relatorioDetalhe');
       const mes = state.filtroMes;
@@ -2055,7 +2020,6 @@
       }
     }
 
-    // ===== EQUIPE =====
     function renderEquipe() {
       const lista = document.getElementById('listaProfissionais');
       if (!state.profissionais.length) {
@@ -2136,7 +2100,6 @@
       });
     }
 
-    // ===== CONFIGURAÇÕES =====
     document.getElementById('btnConfig').addEventListener('click', () => {
       document.getElementById('modalConfig').hidden = false;
     });
@@ -2218,14 +2181,13 @@
         alert('📧 E-mail enviado para ' + state.usuario.email);
       } catch (e) { alert('Erro: ' + e.message); }
     });
-           // ===== CONTROLE DE ASSINATURA E TRIAL =====
 
     const LINK_PAGAMENTO = 'https://mpago.la/1MyzDbG';
 
     async function garantirPerfil(user) {
       const userRef = db.collection('users').doc(user.uid);
       const snap = await userRef.get();
-      if (snap.exists) return; // já existe, não cria trial de novo
+      if (snap.exists) return;
 
       const agora = new Date();
       const trialFim = new Date(agora.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -2241,14 +2203,12 @@
     }
 
     async function verificarAcesso(uid) {
-      // Administradores nunca são bloqueados
       if (isAdmin(state.usuario?.email)) {
         return { podeUsar: true, diasRestantes: 999, motivo: 'admin' };
       }
 
       const agora = new Date();
 
-      // 1) TRIAL — fica no documento do usuário
       const userSnap = await db.collection('users').doc(uid).get();
       const perfil = userSnap.exists ? userSnap.data() : {};
 
@@ -2257,7 +2217,6 @@
         : (perfil.trialFim ? new Date(perfil.trialFim) : null);
       const noTrial = perfil.trialAtivo === true && trialFim && agora < trialFim;
 
-      // 2) ASSINATURA PAGA — só o backend (webhook) grava aqui
       const assSnap = await db.collection('users').doc(uid).collection('assinatura').doc('status').get();
       const ass = assSnap.exists ? assSnap.data() : {};
       const assinaturaExpira = ass.assinaturaExpira?.toDate
@@ -2306,9 +2265,6 @@
     document.getElementById('btnSairBloqueio').addEventListener('click', () => {
       auth.signOut();
     });
-
-
   </script>
 </body>
 </html>
-
