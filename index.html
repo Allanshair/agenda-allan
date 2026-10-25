@@ -998,15 +998,14 @@
         return;
       }
 
-      state.usuario = user;
+            state.usuario = user;
+
+      // Garante que o perfil existe (cria o trial na 1ª vez)
+      await garantirPerfil(user);
 
       // Verifica trial ou assinatura
       const acesso = await verificarAcesso(user.uid);
-
-      if (!acesso.podeUsar) {
-        mostrarBloqueio();
-        return;
-      }
+    }
 
       mostrarApp();
 
